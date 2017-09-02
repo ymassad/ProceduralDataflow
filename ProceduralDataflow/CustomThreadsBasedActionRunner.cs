@@ -1,20 +1,11 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using ProceduralDataflow.Interfaces;
 
 namespace ProceduralDataflow
 {
-    public class TrackingObject
-    {
-        public HashSet<Guid> VisitedNodes { get; } = new HashSet<Guid>();
-
-        public static ThreadLocal<TrackingObject> CurrentProcessingItem = new ThreadLocal<TrackingObject>(() => null);
-
-    }
-
     public class CustomThreadsBasedActionRunner : IActionRunner, IStartStopable
     {
         private readonly int numberOfThreads;
