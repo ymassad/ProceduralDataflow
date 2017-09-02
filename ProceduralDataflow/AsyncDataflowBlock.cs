@@ -39,8 +39,6 @@ namespace ProceduralDataflow
             if (firstVisit)
                 currentItem.VisitedNodes.Add(nodeId);
 
-            var executionContext = ExecutionContext.Capture();
-
             Func<Task> runAction = async () =>
             {
                 try
@@ -59,19 +57,7 @@ namespace ProceduralDataflow
             };
 
             Func<Task> actionToAddToCollection =
-                executionContext == null
-                    ? runAction
-                    : (async () =>
-                    {
-                        Task actionTask = null;
-
-                        ExecutionContext.Run(executionContext, _ =>
-                        {
-                            actionTask = runAction();
-                        }, null);
-
-                        await actionTask;
-                    });
+                MakeActionRunInCurrentExecutionContextIfAny(runAction);
 
             TrackingObject.CurrentProcessingItem.Value = null;
 
@@ -87,6 +73,25 @@ namespace ProceduralDataflow
             return task;
         }
 
+        private Func<Task> MakeActionRunInCurrentExecutionContextIfAny(Func<Task> action)
+        {
+            var executionContext = ExecutionContext.Capture();
+
+            return executionContext == null
+                ? action
+                : (async () =>
+                {
+                    Task task = null;
+
+                    ExecutionContext.Run(executionContext, _ =>
+                    {
+                        task = action();
+                    }, null);
+
+                    await task;
+                });
+        }
+
         public DfTask<TResult> Run<TResult>(Func<Task<TResult>> function)
         {
             var task = new DfTask<TResult>();
@@ -97,8 +102,6 @@ namespace ProceduralDataflow
 
             if (firstVisit)
                 currentItem.VisitedNodes.Add(nodeId);
-
-            var executionContext = ExecutionContext.Capture();
 
             Func<Task> runAction = async() =>
             {
@@ -120,19 +123,7 @@ namespace ProceduralDataflow
             };
 
             Func<Task> actionToAddToCollection =
-                executionContext == null
-                    ? runAction
-                    : (async () =>
-                    {
-                        Task actionTask = null;
-
-                        ExecutionContext.Run(executionContext, _ =>
-                        {
-                            actionTask = runAction();
-                        }, null);
-
-                        await actionTask;
-                    });
+                MakeActionRunInCurrentExecutionContextIfAny(runAction);
 
             TrackingObject.CurrentProcessingItem.Value = null;
 

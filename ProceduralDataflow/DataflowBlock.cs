@@ -40,8 +40,6 @@ namespace ProceduralDataflow
             if (firstVisit)
                 currentItem.VisitedNodes.Add(nodeId);
 
-            
-
             Action runAction = () =>
             {
                 try
@@ -59,12 +57,8 @@ namespace ProceduralDataflow
                 task.SetResult();
             };
 
-            var executionContext = ExecutionContext.Capture();
-
             Action actionToAddToCollection =
-                executionContext == null
-                    ? runAction
-                    : (() => ExecutionContext.Run(executionContext, _ => runAction(), null));
+                MakeActionRunInCurrentExecutionContextIfAny(runAction);
 
             TrackingObject.CurrentProcessingItem.Value = null;
 
@@ -80,6 +74,15 @@ namespace ProceduralDataflow
             return task;
         }
 
+        private Action MakeActionRunInCurrentExecutionContextIfAny(Action action)
+        {
+            var executionContext = ExecutionContext.Capture();
+
+            return executionContext == null
+                ? action
+                : (() => ExecutionContext.Run(executionContext, _ => action(), null));
+        }
+
         public DfTask<TResult> Run<TResult>(Func<TResult> function)
         {
             var task = new DfTask<TResult>();
@@ -90,8 +93,6 @@ namespace ProceduralDataflow
 
             if (firstVisit)
                 currentItem.VisitedNodes.Add(nodeId);
-
-            var executionContext = ExecutionContext.Capture();
 
             Action runAction = () =>
             {
@@ -113,9 +114,7 @@ namespace ProceduralDataflow
             };
 
             Action actionToAddToCollection =
-                executionContext == null
-                    ? runAction
-                    : (() => ExecutionContext.Run(executionContext, _ => runAction(), null));
+                MakeActionRunInCurrentExecutionContextIfAny(runAction);
 
             TrackingObject.CurrentProcessingItem.Value = null;
 
