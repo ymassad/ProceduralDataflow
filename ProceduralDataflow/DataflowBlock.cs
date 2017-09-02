@@ -9,7 +9,7 @@ namespace ProceduralDataflow
     public class DataflowBlock : IDataflowBlock, IStartStopable
     {
         private readonly IActionRunner actionRunner;
-        private readonly int maximumDegreeOfParallelism;
+        private readonly int? maximumDegreeOfParallelism;
 
         private readonly BlockingCollection<Action> collection;
 
@@ -17,7 +17,7 @@ namespace ProceduralDataflow
 
         private readonly Guid nodeId;
 
-        public DataflowBlock(IActionRunner actionRunner, int maximumNumberOfActionsInQueue, int maximumDegreeOfParallelism)
+        public DataflowBlock(IActionRunner actionRunner, int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
         {
             this.actionRunner = actionRunner;
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
@@ -151,13 +151,16 @@ namespace ProceduralDataflow
 
                 var waitHandle = actionRunner.EnqueueAction(action);
 
-                waitHandles.Add(waitHandle);
-
-                if (waitHandles.Count == maximumDegreeOfParallelism)
+                if (maximumDegreeOfParallelism.HasValue)
                 {
-                    int index =  WaitHandle.WaitAny(waitHandles.ToArray());
+                    waitHandles.Add(waitHandle);
 
-                    waitHandles.RemoveAt(index);
+                    if (waitHandles.Count == maximumDegreeOfParallelism)
+                    {
+                        int index = WaitHandle.WaitAny(waitHandles.ToArray());
+
+                        waitHandles.RemoveAt(index);
+                    }
                 }
             }
         }
