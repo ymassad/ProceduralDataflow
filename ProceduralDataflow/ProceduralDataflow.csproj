@@ -44,11 +44,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AsyncDataflowBlock.cs" />
     <Compile Include="CustomThreadsBasedActionRunner.cs" />
     <Compile Include="DataflowBlock.cs" />
     <Compile Include="DfTask.cs" />
     <Compile Include="DfTaskMethodBuilder.cs" />
     <Compile Include="Interfaces\IActionRunner.cs" />
+    <Compile Include="Interfaces\IAsyncDataflowBlock.cs" />
     <Compile Include="Interfaces\IDataflowBlock.cs" />
     <Compile Include="Interfaces\IStartStopable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

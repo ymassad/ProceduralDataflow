@@ -96,6 +96,50 @@ namespace ProceduralDataflow.Tests
                 new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 });
         }
 
+        //TODO: add more tests for the async version
+        [TestMethod]
+        public async Task FastInsideProducerWillBeSlowedBySlowConsumerForAsyncVersion()
+        {
+            await CreateAndUseNewAsyncBlock(1, 1, async runner1 =>
+            {
+                await CreateAndUseNewAsyncBlock(1, 1, async runner2 =>
+                {
+                    long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
+
+                    long numberOfTimesFirstOperationWasRun = 0;
+
+                    long numberOfTimesSecondOperationWasRun = 0;
+
+                    async Task Method1()
+                    {
+                        await runner1.Run(async () =>
+                        {
+                            Interlocked.Increment(ref numberOfTimesFirstOperationWasRun);
+                        });
+
+                        await runner2.Run(async () =>
+                        {
+                            await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+                            var numberOfTimes = Interlocked.Increment(ref numberOfTimesSecondOperationWasRun);
+
+                            numberOfTimesFirstOperationWasRunWhenSecondOperationRuns[numberOfTimes - 1] = Interlocked.Read(ref numberOfTimesFirstOperationWasRun);
+                        });
+                    }
+
+                    var tasks = Enumerable.Range(0, 10).Select(_ => Method1()).ToArray();
+
+                    await Task.WhenAll(tasks);
+
+                    PossibleValuesComparer
+                        .AreEqual(
+                            numberOfTimesFirstOperationWasRunWhenSecondOperationRuns,
+                            new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 })
+                        .Should().BeTrue();
+                });
+            });
+        }
+
 
         [TestMethod]
         public async Task FastInsideProducerWillBeSlowedBySlowConsumerWhenQueueSizeIs2()
@@ -546,6 +590,23 @@ namespace ProceduralDataflow.Tests
             }
         }
 
+        public static async Task CreateAndUseNewAsyncBlock(int? maximumDegreeOfParallelism, int maximumNumberOfActionsInQueue, Func<IAsyncDataflowBlock, Task> action)
+        {
+            var node = new AsyncDataflowBlock(maximumNumberOfActionsInQueue, maximumDegreeOfParallelism);
+
+            node.Start();
+
+            try
+            {
+                await action(node);
+            }
+            finally
+            {
+                node.Stop();
+            }
+        }
+
+
         private async Task RunBasicTwoOperationsTest(int numberOfThreadsForFirstOperation, int queue1Size,
             int numberOfThreadsForSecondOperation, int queye2Size, int numberOfTimesToProcess,
             PossibleValues<long>[] expectedNumberOfFirstOperationCompleteForEachTimeOperationTwoIsInvoked)
@@ -612,5 +673,6 @@ namespace ProceduralDataflow.Tests
             if (timeToWork > TimeSpan.Zero)
                 Thread.Sleep(timeToWork);
         }
+
     }
 }

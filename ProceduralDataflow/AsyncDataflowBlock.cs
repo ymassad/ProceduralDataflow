@@ -2,34 +2,33 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using ProceduralDataflow.Interfaces;
 
 namespace ProceduralDataflow
 {
-    public class DataflowBlock : IDataflowBlock, IStartStopable
+    public class AsyncDataflowBlock : IAsyncDataflowBlock, IStartStopable
     {
-        private readonly IActionRunner actionRunner;
         private readonly int? maximumDegreeOfParallelism;
 
-        private readonly BlockingCollection<Action> collection;
+        private readonly BlockingCollection<Func<Task>> collection;
 
-        private readonly BlockingCollection<Action> collectionForReentrantItems;
+        private readonly BlockingCollection<Func<Task>> collectionForReentrantItems;
 
         private readonly Guid nodeId;
 
-        public DataflowBlock(IActionRunner actionRunner, int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
+        public AsyncDataflowBlock(int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
         {
-            this.actionRunner = actionRunner;
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
 
-            collection = new BlockingCollection<Action>(new ConcurrentQueue<Action>(), maximumNumberOfActionsInQueue);
+            collection = new BlockingCollection<Func<Task>>(new ConcurrentQueue<Func<Task>>(), maximumNumberOfActionsInQueue);
 
-            collectionForReentrantItems = new BlockingCollection<Action>();
+            collectionForReentrantItems = new BlockingCollection<Func<Task>>();
 
             nodeId = Guid.NewGuid();
         }
 
-        public DfTask Run(Action action)
+        public DfTask Run(Func<Task> action)
         {
             var task = new DfTask();
 
@@ -40,13 +39,13 @@ namespace ProceduralDataflow
             if (firstVisit)
                 currentItem.VisitedNodes.Add(nodeId);
 
-            
+            var executionContext = ExecutionContext.Capture();
 
-            Action runAction = () =>
+            Func<Task> runAction = async () =>
             {
                 try
                 {
-                    action();
+                    await action();
                 }
                 catch (Exception ex)
                 {
@@ -59,12 +58,20 @@ namespace ProceduralDataflow
                 task.SetResult();
             };
 
-            var executionContext = ExecutionContext.Capture();
-
-            Action actionToAddToCollection =
+            Func<Task> actionToAddToCollection =
                 executionContext == null
                     ? runAction
-                    : (() => ExecutionContext.Run(executionContext, _ => runAction(), null));
+                    : (async () =>
+                    {
+                        Task actionTask = null;
+
+                        ExecutionContext.Run(executionContext, _ =>
+                        {
+                            actionTask = runAction();
+                        }, null);
+
+                        await actionTask;
+                    });
 
             TrackingObject.CurrentProcessingItem.Value = null;
 
@@ -80,7 +87,7 @@ namespace ProceduralDataflow
             return task;
         }
 
-        public DfTask<TResult> Run<TResult>(Func<TResult> function)
+        public DfTask<TResult> Run<TResult>(Func<Task<TResult>> function)
         {
             var task = new DfTask<TResult>();
 
@@ -93,13 +100,13 @@ namespace ProceduralDataflow
 
             var executionContext = ExecutionContext.Capture();
 
-            Action runAction = () =>
+            Func<Task> runAction = async() =>
             {
                 TResult result;
 
                 try
                 {
-                    result = function();
+                    result = await function();
                 }
                 catch (Exception ex)
                 {
@@ -112,10 +119,20 @@ namespace ProceduralDataflow
                 task.SetResult(result);
             };
 
-            Action actionToAddToCollection =
+            Func<Task> actionToAddToCollection =
                 executionContext == null
                     ? runAction
-                    : (() => ExecutionContext.Run(executionContext, _ => runAction(), null));
+                    : (async () =>
+                    {
+                        Task actionTask = null;
+
+                        ExecutionContext.Run(executionContext, _ =>
+                        {
+                            actionTask = runAction();
+                        }, null);
+
+                        await actionTask;
+                    });
 
             TrackingObject.CurrentProcessingItem.Value = null;
 
@@ -135,14 +152,14 @@ namespace ProceduralDataflow
 
         public void Start()
         {
-            thread = new Thread(DoIt);
+            thread = new Thread(() => DoIt().Wait());
 
             thread.Start();
         }
 
-        private void DoIt()
+        private async Task DoIt()
         {
-            List<WaitHandle> waitHandles = new List<WaitHandle>();
+            List<Task> tasks = new List<Task>();
 
             while (true)
             {
@@ -151,35 +168,35 @@ namespace ProceduralDataflow
                 if (action == null)
                     return;
 
-                var waitHandle = actionRunner.EnqueueAction(action);
+                var task = action();
 
                 if (maximumDegreeOfParallelism.HasValue)
                 {
-                    waitHandles.Add(waitHandle);
+                    tasks.Add(task);
 
-                    if (waitHandles.Count == maximumDegreeOfParallelism)
+                    if (tasks.Count == maximumDegreeOfParallelism)
                     {
-                        int index = WaitHandle.WaitAny(waitHandles.ToArray());
+                        var taskToRemove = await Task.WhenAny(tasks.ToArray());
 
-                        waitHandles.RemoveAt(index);
+                        tasks.Remove(taskToRemove);
                     }
                 }
             }
         }
 
-        private Action GetAction()
+        private Func<Task> GetAction()
         {
             if (collectionForReentrantItems.TryTake(out var reentrantItem))
             {
                 return reentrantItem;
             }
 
-            Action someItem;
+            Func<Task> someItem;
 
             try
             {
-                BlockingCollection<Action>.TakeFromAny(
-                    new[] {collectionForReentrantItems, collection},
+                BlockingCollection<Func<Task>>.TakeFromAny(
+                    new[] { collectionForReentrantItems, collection },
                     out someItem);
             }
             catch (ArgumentException)
