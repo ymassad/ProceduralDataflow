@@ -16,7 +16,7 @@ namespace ProceduralDataflow.Tests
         [TestMethod]
         public async Task AsyncMethodsThatUseTheDfSystemWillComplete()
         {
-            await UseNewRunner(1, 1, async runner =>
+            await CreateAndUseNewBlock(1, 1, async runner =>
             {
                 async Task Method1()
                 {
@@ -30,7 +30,7 @@ namespace ProceduralDataflow.Tests
         [TestMethod]
         public async Task CustomThreadsBasedActionRunnerWillActuallyRunTheAction()
         {
-            await UseNewRunner(1, 1, async runner =>
+            await CreateAndUseNewBlock(1, 1, async runner =>
             {
                 bool flag = false;
 
@@ -48,7 +48,7 @@ namespace ProceduralDataflow.Tests
         [TestMethod]
         public async Task FastOutsideProducerWillBeSlowedBySlowConsumer()
         {
-            await UseNewRunner(1, 1, async runner1 =>
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
             {
                 long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
 
@@ -129,9 +129,9 @@ namespace ProceduralDataflow.Tests
         {
             var numberOfTimesToProcess = 10;
 
-            await UseNewRunner(1, 1, async runner1 =>
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
             {
-                await UseNewRunner(1, 1, async runner2 =>
+                await CreateAndUseNewBlock(1, 1, async runner2 =>
                 {
                     long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[numberOfTimesToProcess * 2];
 
@@ -166,9 +166,9 @@ namespace ProceduralDataflow.Tests
         [TestMethod]
         public async Task DfTaskCanBeUsedAsReturnTypeOfAsyncMethodToEnableComposition()
         {
-            await UseNewRunner(1, 1, async runner1 =>
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
             {
-                await UseNewRunner(1, 1, async runner2 =>
+                await CreateAndUseNewBlock(1, 1, async runner2 =>
                 {
                     long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
 
@@ -222,7 +222,7 @@ namespace ProceduralDataflow.Tests
         [TestMethod]
         public async Task DfTaskAsAsyncReturnTypeWillFlowExecutionContext()
         {
-            await UseNewRunner(1, 1, async runner1 =>
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
             {
                 async DfTask<bool> Part1(int index)
                 {
@@ -280,7 +280,7 @@ namespace ProceduralDataflow.Tests
         [TestMethod]
         public async Task ExecutionContextFlowsCorrectly()
         {
-            await UseNewRunner(1, 1, async runner1 =>
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
             {
                 async Task<bool> Method1(int index)
                 {
@@ -324,7 +324,7 @@ namespace ProceduralDataflow.Tests
         [TestMethod]
         public async Task ExceptionsAreHandledCorrectlyFromTheDfTaskAwaiter()
         {
-            await UseNewRunner(1, 1, async runner1 =>
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
             {
                 async Task Method1()
                 {
@@ -382,7 +382,7 @@ namespace ProceduralDataflow.Tests
         [TestMethod]
         public async Task ExceptionsAreHandledCorrectlyFromTheDfTaskAsAsyncReturnValue()
         {
-            await UseNewRunner(1, 1, async runner1 =>
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
             {
                 async DfTask Method1()
                 {
@@ -407,11 +407,11 @@ namespace ProceduralDataflow.Tests
         [TestMethod]
         public async Task MultipleStepsRunTogether()
         {
-            await UseNewRunner(1, 1, async runner1 =>
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
             {
-                await UseNewRunner(1, 1, async runner2 =>
+                await CreateAndUseNewBlock(1, 1, async runner2 =>
                 {
-                    await UseNewRunner(1, 1, async runner3 =>
+                    await CreateAndUseNewBlock(1, 1, async runner3 =>
                     {
                         long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
 
@@ -468,11 +468,11 @@ namespace ProceduralDataflow.Tests
         [TestMethod]
         public async Task MultipleStepsRunTogether_2ThreadsPerStep()
         {
-            await UseNewRunner(2, 2, async runner1 =>
+            await CreateAndUseNewBlock(2, 2, async runner1 =>
             {
-                await UseNewRunner(2, 2, async runner2 =>
+                await CreateAndUseNewBlock(2, 2, async runner2 =>
                 {
-                    await UseNewRunner(2, 2, async runner3 =>
+                    await CreateAndUseNewBlock(2, 2, async runner3 =>
                     {
                         long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
 
@@ -524,18 +524,24 @@ namespace ProceduralDataflow.Tests
             });
         }
 
-        public static async Task UseNewRunner(int numberOfThreads, int maximumNumberOfActionsInQueue, Func<IActionRunner, Task> action)
+        public static async Task CreateAndUseNewBlock(int numberOfThreads, int maximumNumberOfActionsInQueue, Func<IDataflowBlock, Task> action)
         {
-            var runner = new CustomThreadsBasedActionRunner(numberOfThreads, maximumNumberOfActionsInQueue);
+            var runner = new CustomThreadsBasedActionRunner(numberOfThreads);
+
+            var node = new DataflowBlock(runner, maximumNumberOfActionsInQueue, numberOfThreads);
 
             runner.Start();
 
+            node.Start();
+
             try
             {
-                await action(runner);
+                await action(node);
             }
             finally
             {
+                node.Stop();
+
                 runner.Stop();
             }
         }
@@ -544,9 +550,9 @@ namespace ProceduralDataflow.Tests
             int numberOfThreadsForSecondOperation, int queye2Size, int numberOfTimesToProcess,
             PossibleValues<long>[] expectedNumberOfFirstOperationCompleteForEachTimeOperationTwoIsInvoked)
         {
-            await UseNewRunner(numberOfThreadsForFirstOperation, queue1Size, async runner1 =>
+            await CreateAndUseNewBlock(numberOfThreadsForFirstOperation, queue1Size, async runner1 =>
             {
-                await UseNewRunner(numberOfThreadsForSecondOperation, queye2Size, async runner2 =>
+                await CreateAndUseNewBlock(numberOfThreadsForSecondOperation, queye2Size, async runner2 =>
                 {
                     long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[numberOfTimesToProcess];
 

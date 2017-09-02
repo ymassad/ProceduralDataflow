@@ -45,10 +45,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CustomThreadsBasedActionRunner.cs" />
+    <Compile Include="DataflowBlock.cs" />
     <Compile Include="DfTask.cs" />
     <Compile Include="DfTaskMethodBuilder.cs" />
     <Compile Include="Interfaces\IActionRunner.cs" />
-    <Compile Include="Interfaces\IAsyncActionRunner.cs" />
+    <Compile Include="Interfaces\IDataflowBlock.cs" />
     <Compile Include="Interfaces\IStartStopable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

@@ -1,11 +1,10 @@
 using System;
+using System.Threading;
 
 namespace ProceduralDataflow.Interfaces
 {
     public interface IActionRunner
     {
-        DfTask Run(Action action);
-
-        DfTask<TResult> Run<TResult>(Func<TResult> function);
+        WaitHandle EnqueueAction(Action action);
     }
 }

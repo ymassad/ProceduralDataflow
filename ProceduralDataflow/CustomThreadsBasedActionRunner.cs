@@ -21,122 +21,11 @@ namespace ProceduralDataflow
 
         private Thread[] threads;
 
-        private readonly BlockingCollection<Action> collection;
+        private BlockingCollection<Action> queue = new BlockingCollection<Action>(new ConcurrentQueue<Action>());
 
-        private readonly BlockingCollection<Action> collectionForReentrantItems;
-
-        private readonly Guid nodeId;
-
-
-        public CustomThreadsBasedActionRunner(int numberOfThreads, int maximumNumberOfActionsInQueue)
+        public CustomThreadsBasedActionRunner(int numberOfThreads)
         {
             this.numberOfThreads = numberOfThreads;
-            collection = new BlockingCollection<Action>(new ConcurrentQueue<Action>(), maximumNumberOfActionsInQueue);
-
-            collectionForReentrantItems = new BlockingCollection<Action>();
-
-            nodeId = Guid.NewGuid();
-        }
-
-        public DfTask Run(Action action)
-        {
-            var task = new DfTask();
-
-            var currentItem = TrackingObject.CurrentProcessingItem.Value ?? (TrackingObject.CurrentProcessingItem.Value = new TrackingObject());
-
-            var firstVisit = !currentItem.VisitedNodes.Contains(nodeId);
-
-            if(firstVisit)
-                currentItem.VisitedNodes.Add(nodeId);
-
-            var executionContext = ExecutionContext.Capture();
-
-            Action runAction = () =>
-            {
-                try
-                {
-                    action();
-                }
-                catch (Exception ex)
-                {
-                    task.SetException(ex);
-                    return;
-                }
-
-                TrackingObject.CurrentProcessingItem.Value = currentItem;
-
-                task.SetResult();
-            };
-
-            Action actionToAddToCollection =
-                executionContext == null
-                    ? runAction
-                    : (() => ExecutionContext.Run(executionContext, _ => runAction(), null));
-
-            TrackingObject.CurrentProcessingItem.Value = null;
-
-            if (firstVisit)
-            {
-                collection.Add(actionToAddToCollection);
-            }
-            else
-            {
-                collectionForReentrantItems.Add(actionToAddToCollection);
-            }
-
-            return task;
-        }
-
-        public DfTask<TResult> Run<TResult>(Func<TResult> function)
-        {
-            var task = new DfTask<TResult>();
-
-            var currentItem = TrackingObject.CurrentProcessingItem.Value ?? (TrackingObject.CurrentProcessingItem.Value = new TrackingObject());
-
-            var firstVisit = !currentItem.VisitedNodes.Contains(nodeId);
-
-            if (firstVisit)
-                currentItem.VisitedNodes.Add(nodeId);
-
-            var executionContext = ExecutionContext.Capture();
-
-            Action runAction = () =>
-            {
-                TResult result;
-
-                try
-                {
-                    result = function();
-                }
-                catch (Exception ex)
-                {
-                    task.SetException(ex);
-                    return;
-                }
-
-                TrackingObject.CurrentProcessingItem.Value = currentItem;
-
-                task.SetResult(result);
-            };
-
-            Action actionToAddToCollection =
-                executionContext == null
-                    ? runAction
-                    : (() => ExecutionContext.Run(executionContext, _ => runAction(), null));
-
-
-            TrackingObject.CurrentProcessingItem.Value = null;
-
-            if (firstVisit)
-            {
-                collection.Add(actionToAddToCollection);
-            }
-            else
-            {
-                collectionForReentrantItems.Add(actionToAddToCollection);
-            }
-
-            return task;
         }
 
         public void Start()
@@ -148,37 +37,29 @@ namespace ProceduralDataflow
 
         private void DoIt()
         {
-            while (true)
+            foreach (var action in queue.GetConsumingEnumerable())
             {
-                while (collectionForReentrantItems.TryTake(out var reentrantItem))
-                {
-                    reentrantItem();
-                }
-
-                Action someItem;
-
-                try
-                {
-                    BlockingCollection<Action>.TakeFromAny(
-                        new[] {collectionForReentrantItems, collection},
-                        out someItem);
-                }
-                catch (ArgumentException)
-                {
-                    return;
-                }
-
-                someItem();
+                action();
             }
-
         }
 
         public void Stop()
         {
-            collection.CompleteAdding();
-            collectionForReentrantItems.CompleteAdding();
+            queue.CompleteAdding();
+        }
 
-            //Array.ForEach(threads, t => t.Join());
+        public WaitHandle EnqueueAction(Action action)
+        {
+            ManualResetEvent handle = new ManualResetEvent(false);
+
+            queue.Add(() =>
+            {
+                action();
+
+                handle.Set();
+            });
+
+            return handle;
         }
     }
 }
