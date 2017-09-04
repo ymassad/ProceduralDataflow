@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Nito.AsyncEx;
 using ProceduralDataflow.Interfaces;
 
 namespace ProceduralDataflow
@@ -11,19 +12,23 @@ namespace ProceduralDataflow
     {
         private readonly int? maximumDegreeOfParallelism;
 
-        private readonly BlockingCollection<Func<Task>> collection;
+        private readonly AsyncCollection<Func<Task>> collection;
 
-        private readonly BlockingCollection<Func<Task>> collectionForReentrantItems;
+        private readonly AsyncCollection<Func<Task>> collectionForReentrantItems;
 
         private readonly Guid nodeId;
+
+        private ConcurrentQueue<Func<Task>> concurrentQueueForReentrantItems;
 
         public AsyncDataflowBlock(int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
         {
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
 
-            collection = new BlockingCollection<Func<Task>>(new ConcurrentQueue<Func<Task>>(), maximumNumberOfActionsInQueue);
+            collection = new AsyncCollection<Func<Task>>(new ConcurrentQueue<Func<Task>>(), maximumNumberOfActionsInQueue);
 
-            collectionForReentrantItems = new BlockingCollection<Func<Task>>();
+            concurrentQueueForReentrantItems = new ConcurrentQueue<Func<Task>>();
+
+            collectionForReentrantItems = new AsyncCollection<Func<Task>>(concurrentQueueForReentrantItems);
 
             nodeId = Guid.NewGuid();
         }
@@ -139,13 +144,10 @@ namespace ProceduralDataflow
             return task;
         }
 
-        private Thread thread;
 
         public void Start()
         {
-            thread = new Thread(() => DoIt().Wait());
-
-            thread.Start();
+            DoIt();
         }
 
         private async Task DoIt()
@@ -154,7 +156,7 @@ namespace ProceduralDataflow
 
             while (true)
             {
-                var action = GetAction();
+                var action = await GetAction();
 
                 if (action == null)
                     return;
@@ -175,27 +177,24 @@ namespace ProceduralDataflow
             }
         }
 
-        private Func<Task> GetAction()
+        private async Task<Func<Task>> GetAction()
         {
-            if (collectionForReentrantItems.TryTake(out var reentrantItem))
+            if (!concurrentQueueForReentrantItems.IsEmpty)
             {
-                return reentrantItem;
+                var reentrantItemResult = await collectionForReentrantItems.TryTakeAsync();
+
+                if (reentrantItemResult.Success)
+                {
+                    return reentrantItemResult.Item;
+                }
             }
 
-            Func<Task> someItem;
+            var itemResult = await new[] { collectionForReentrantItems, collection }.TryTakeFromAnyAsync();
 
-            try
-            {
-                BlockingCollection<Func<Task>>.TakeFromAny(
-                    new[] { collectionForReentrantItems, collection },
-                    out someItem);
-            }
-            catch (ArgumentException)
-            {
+            if(!itemResult.Success)
                 return null;
-            }
 
-            return someItem;
+            return itemResult.Item;
         }
 
         public void Stop()

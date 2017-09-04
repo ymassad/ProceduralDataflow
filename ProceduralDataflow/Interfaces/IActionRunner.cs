@@ -1,10 +1,11 @@
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace ProceduralDataflow.Interfaces
 {
     public interface IActionRunner
     {
-        WaitHandle EnqueueAction(Action action);
+        Task EnqueueAction(Action action);
     }
 }

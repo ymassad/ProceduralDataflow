@@ -2,6 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
+using Nito.AsyncEx;
 using ProceduralDataflow.Interfaces;
 
 namespace ProceduralDataflow
@@ -9,22 +11,27 @@ namespace ProceduralDataflow
     public class DataflowBlock : IDataflowBlock, IStartStopable
     {
         private readonly IActionRunner actionRunner;
+
         private readonly int? maximumDegreeOfParallelism;
 
-        private readonly BlockingCollection<Action> collection;
+        private readonly AsyncCollection<Action> collection;
 
-        private readonly BlockingCollection<Action> collectionForReentrantItems;
+        private readonly AsyncCollection<Action> collectionForReentrantItems;
 
         private readonly Guid nodeId;
+
+        private readonly ConcurrentQueue<Action> concurrentQueueForReentrantItems;
 
         public DataflowBlock(IActionRunner actionRunner, int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
         {
             this.actionRunner = actionRunner;
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
 
-            collection = new BlockingCollection<Action>(new ConcurrentQueue<Action>(), maximumNumberOfActionsInQueue);
+            collection = new AsyncCollection<Action>(new ConcurrentQueue<Action>(), maximumNumberOfActionsInQueue);
 
-            collectionForReentrantItems = new BlockingCollection<Action>();
+            concurrentQueueForReentrantItems = new ConcurrentQueue<Action>();
+
+            collectionForReentrantItems = new AsyncCollection<Action>(concurrentQueueForReentrantItems);
 
             nodeId = Guid.NewGuid();
         }
@@ -129,64 +136,57 @@ namespace ProceduralDataflow
 
             return task;
         }
-
-        private Thread thread;
-
+        
         public void Start()
         {
-            thread = new Thread(DoIt);
-
-            thread.Start();
+            DoIt();
         }
 
-        private void DoIt()
+        private async Task DoIt()
         {
-            List<WaitHandle> waitHandles = new List<WaitHandle>();
+            List<Task> tasks = new List<Task>();
 
             while (true)
             {
-                var action = GetAction();
+                var action = await GetAction();
 
                 if (action == null)
                     return;
 
-                var waitHandle = actionRunner.EnqueueAction(action);
+                var task = actionRunner.EnqueueAction(action);
 
                 if (maximumDegreeOfParallelism.HasValue)
                 {
-                    waitHandles.Add(waitHandle);
+                    tasks.Add(task);
 
-                    if (waitHandles.Count == maximumDegreeOfParallelism)
+                    if (tasks.Count == maximumDegreeOfParallelism)
                     {
-                        int index = WaitHandle.WaitAny(waitHandles.ToArray());
+                        var taskToRemove = await Task.WhenAny(tasks.ToArray());
 
-                        waitHandles.RemoveAt(index);
+                        tasks.Remove(taskToRemove);
                     }
                 }
             }
         }
 
-        private Action GetAction()
+        private async Task<Action> GetAction()
         {
-            if (collectionForReentrantItems.TryTake(out var reentrantItem))
+            if (!concurrentQueueForReentrantItems.IsEmpty)
             {
-                return reentrantItem;
+                var reentrantItemResult = await collectionForReentrantItems.TryTakeAsync();
+
+                if (reentrantItemResult.Success)
+                {
+                    return reentrantItemResult.Item;
+                }
             }
 
-            Action someItem;
+            var itemResult = await new[] { collectionForReentrantItems, collection }.TryTakeFromAnyAsync();
 
-            try
-            {
-                BlockingCollection<Action>.TakeFromAny(
-                    new[] {collectionForReentrantItems, collection},
-                    out someItem);
-            }
-            catch (ArgumentException)
-            {
+            if (!itemResult.Success)
                 return null;
-            }
 
-            return someItem;
+            return itemResult.Item;
         }
 
         public void Stop()

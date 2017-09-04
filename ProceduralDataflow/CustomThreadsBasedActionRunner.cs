@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using ProceduralDataflow.Interfaces;
 
 namespace ProceduralDataflow
@@ -39,18 +40,18 @@ namespace ProceduralDataflow
             queue.CompleteAdding();
         }
 
-        public WaitHandle EnqueueAction(Action action)
+        public Task EnqueueAction(Action action)
         {
-            ManualResetEvent handle = new ManualResetEvent(false);
+            TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
 
             queue.Add(() =>
             {
                 action();
 
-                handle.Set();
+                tcs.SetResult(0);
             });
 
-            return handle;
+            return tcs.Task;
         }
     }
 }
