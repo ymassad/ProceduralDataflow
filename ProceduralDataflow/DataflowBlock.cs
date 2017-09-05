@@ -49,19 +49,23 @@ namespace ProceduralDataflow
 
             Action runAction = () =>
             {
+                Exception exception = null;
+
                 try
                 {
                     action();
                 }
                 catch (Exception ex)
                 {
-                    task.SetException(ex);
-                    return;
+                    exception = ex;
                 }
 
                 TrackingObject.CurrentProcessingItem.Value = currentItem;
 
-                task.SetResult();
+                if (exception == null)
+                    task.SetResult();
+                else
+                    task.SetException(exception);
             };
 
             Action actionToAddToCollection =
@@ -103,7 +107,9 @@ namespace ProceduralDataflow
 
             Action runAction = () =>
             {
-                TResult result;
+                TResult result = default(TResult);
+
+                Exception exception = null;
 
                 try
                 {
@@ -111,13 +117,15 @@ namespace ProceduralDataflow
                 }
                 catch (Exception ex)
                 {
-                    task.SetException(ex);
-                    return;
+                    exception = ex;
                 }
-
+                
                 TrackingObject.CurrentProcessingItem.Value = currentItem;
 
-                task.SetResult(result);
+                if(exception == null)
+                    task.SetResult(result);
+                else
+                    task.SetException(exception);
             };
 
             Action actionToAddToCollection =

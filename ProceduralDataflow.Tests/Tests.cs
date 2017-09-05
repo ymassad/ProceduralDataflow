@@ -177,25 +177,16 @@ namespace ProceduralDataflow.Tests
             {
                 await CreateAndUseNewBlock(1, 1, async runner2 =>
                 {
-                    long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[numberOfTimesToProcess * 2];
-
-                    long numberOfTimesFirstOperationWasRun = 0;
-
-                    long numberOfTimesSecondOperationWasRun = 0;
-
                     async Task Method1()
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            await runner1.Run(() => { SimulateWork(TimeSpan.Zero, ref numberOfTimesFirstOperationWasRun); });
+                            await runner1.Run(() => { SimulateWork(TimeSpan.Zero); });
 
                             await runner2.Run(() =>
                             {
                                 SimulateWork(
-                                    TimeSpan.FromMilliseconds(100),
-                                    ref numberOfTimesSecondOperationWasRun,
-                                    ref numberOfTimesFirstOperationWasRun,
-                                    numberOfTimesFirstOperationWasRunWhenSecondOperationRuns);
+                                    TimeSpan.FromMilliseconds(100));
                             });
                         }
                     }
@@ -206,6 +197,40 @@ namespace ProceduralDataflow.Tests
                 });
             });
         }
+
+        [TestMethod]
+        public async Task CycleInTheFlowWhereAnExceptionIsThrownShouldNotDeadlock()
+        {
+            var numberOfTimesToProcess = 10;
+
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
+            {
+                await CreateAndUseNewBlock(1, 1, async runner2 =>
+                {
+                    async Task Method1()
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            try
+                            {
+                                await runner1.Run(() => throw new Exception("Some exception"));
+                            }
+                            catch {}
+
+                            await runner2.Run(() =>
+                            {
+                                SimulateWork(TimeSpan.FromMilliseconds(100));
+                            });
+                        }
+                    }
+
+                    var tasks = Enumerable.Range(0, numberOfTimesToProcess).Select(_ => Method1()).ToArray();
+
+                    await Task.WhenAll(tasks);
+                });
+            });
+        }
+
 
         [TestMethod]
         public async Task DfTaskCanBeUsedAsReturnTypeOfAsyncMethodToEnableComposition()

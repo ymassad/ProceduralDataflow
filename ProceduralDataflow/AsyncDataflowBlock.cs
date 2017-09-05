@@ -46,19 +46,23 @@ namespace ProceduralDataflow
 
             Func<Task> runAction = async () =>
             {
+                Exception exception = null;
+
                 try
                 {
                     await action();
                 }
                 catch (Exception ex)
                 {
-                    task.SetException(ex);
-                    return;
+                    exception = ex;
                 }
 
                 TrackingObject.CurrentProcessingItem.Value = currentItem;
 
-                task.SetResult();
+                if(exception == null)
+                    task.SetResult();
+                else
+                    task.SetException(exception);
             };
 
             Func<Task> actionToAddToCollection =
@@ -110,7 +114,9 @@ namespace ProceduralDataflow
 
             Func<Task> runAction = async() =>
             {
-                TResult result;
+                TResult result = default(TResult);
+
+                Exception exception = null;
 
                 try
                 {
@@ -118,13 +124,15 @@ namespace ProceduralDataflow
                 }
                 catch (Exception ex)
                 {
-                    task.SetException(ex);
-                    return;
+                    exception = ex;
                 }
 
                 TrackingObject.CurrentProcessingItem.Value = currentItem;
 
-                task.SetResult(result);
+                if(exception == null)
+                    task.SetResult(result);
+                else
+                    task.SetException(exception);
             };
 
             Func<Task> actionToAddToCollection =
