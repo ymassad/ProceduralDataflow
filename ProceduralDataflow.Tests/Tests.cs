@@ -46,45 +46,7 @@ namespace ProceduralDataflow.Tests
         }
 
         [TestMethod]
-        public async Task FastOutsideProducerWillBeSlowedBySlowConsumer()
-        {
-            await CreateAndUseNewBlock(1, 1, async runner1 =>
-            {
-                long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
-
-                long numberOfTimesFirstOperationWasRun = 0;
-
-                long numberOfTimesSecondOperationWasRun = 0;
-
-                async Task Method1()
-                {
-                    await runner1.Run(() =>
-                    {
-                        SimulateWork(
-                            TimeSpan.FromMilliseconds(100),
-                            ref numberOfTimesSecondOperationWasRun,
-                            ref numberOfTimesFirstOperationWasRun,
-                            numberOfTimesFirstOperationWasRunWhenSecondOperationRuns);
-                    });
-                }
-
-                var tasks = Enumerable.Range(0, 10)
-                    .Select(_ =>
-                    {
-                        Interlocked.Increment(ref numberOfTimesFirstOperationWasRun);
-                        return Method1();
-                    }).ToArray();
-
-                await Task.WhenAll(tasks);
-
-                numberOfTimesFirstOperationWasRunWhenSecondOperationRuns
-                    .SequenceEqual(new long[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 })
-                    .Should().BeTrue();
-            });
-        }
-
-        [TestMethod]
-        public async Task FastInsideProducerWillBeSlowedBySlowConsumer()
+        public async Task FastProducerWillBeSlowedBySlowConsumer()
         {
             await RunBasicTwoOperationsTest(
                 numberOfThreadsForFirstOperation: 1,
@@ -98,7 +60,7 @@ namespace ProceduralDataflow.Tests
 
         //TODO: add more tests for the async version
         [TestMethod]
-        public async Task FastInsideProducerWillBeSlowedBySlowConsumerForAsyncVersion()
+        public async Task FastProducerWillBeSlowedBySlowConsumerForAsyncVersion()
         {
             await CreateAndUseNewAsyncBlock(1, 1, async runner1 =>
             {
@@ -142,7 +104,7 @@ namespace ProceduralDataflow.Tests
 
 
         [TestMethod]
-        public async Task FastInsideProducerWillBeSlowedBySlowConsumerWhenQueueSizeIs2()
+        public async Task FastProducerWillBeSlowedBySlowConsumerWhenQueueSizeIs2()
         {
             await RunBasicTwoOperationsTest(
                 numberOfThreadsForFirstOperation: 1,
@@ -156,7 +118,7 @@ namespace ProceduralDataflow.Tests
 
 
         [TestMethod]
-        public async Task FastInsideProducerWillBeSlowedBySlowConsumerWhenQueueSizeIs2AndNumberOfThreadsIs2()
+        public async Task FastProducerWillBeSlowedBySlowConsumerWhenQueueSizeIs2AndNumberOfThreadsIs2()
         {
             await RunBasicTwoOperationsTest(
                 numberOfThreadsForFirstOperation: 2,
@@ -595,11 +557,9 @@ namespace ProceduralDataflow.Tests
 
         public static async Task CreateAndUseNewBlock(int numberOfThreads, int maximumNumberOfActionsInQueue, Func<IDataflowBlock, Task> action)
         {
-            var runner = new CustomThreadsBasedActionRunner(numberOfThreads);
+            var runner = new ThreadPoolBasedActionRunner();
 
             var node = new DataflowBlock(runner, maximumNumberOfActionsInQueue, numberOfThreads);
-
-            runner.Start();
 
             node.Start();
 
@@ -610,8 +570,6 @@ namespace ProceduralDataflow.Tests
             finally
             {
                 node.Stop();
-
-                runner.Stop();
             }
         }
 

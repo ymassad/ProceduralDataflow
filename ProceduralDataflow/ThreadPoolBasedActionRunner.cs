@@ -11,5 +11,10 @@ namespace ProceduralDataflow
         {
             return Task.Run(action);
         }
+
+        public Task EnqueueAction(Func<Task> action)
+        {
+            return Task.Run(action);
+        }
     }
 }

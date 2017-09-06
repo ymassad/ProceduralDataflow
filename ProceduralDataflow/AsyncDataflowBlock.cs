@@ -20,6 +20,9 @@ namespace ProceduralDataflow
 
         private ConcurrentQueue<Func<Task>> concurrentQueueForReentrantItems;
 
+        [ThreadStatic]
+        private static Task AddTask;
+
         public AsyncDataflowBlock(int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
         {
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
@@ -59,10 +62,15 @@ namespace ProceduralDataflow
 
                 TrackingObject.CurrentProcessingItem.Value = currentItem;
 
-                if(exception == null)
+                AddTask = null;
+
+                if (exception == null)
                     task.SetResult();
                 else
                     task.SetException(exception);
+
+                if (AddTask != null)
+                    await AddTask;
             };
 
             Func<Task> actionToAddToCollection =
@@ -72,11 +80,11 @@ namespace ProceduralDataflow
 
             if (firstVisit)
             {
-                collection.Add(actionToAddToCollection);
+                AddTask = collection.AddAsync(actionToAddToCollection);
             }
             else
             {
-                collectionForReentrantItems.Add(actionToAddToCollection);
+                AddTask = collectionForReentrantItems.AddAsync(actionToAddToCollection);
             }
 
             return task;
@@ -129,10 +137,15 @@ namespace ProceduralDataflow
 
                 TrackingObject.CurrentProcessingItem.Value = currentItem;
 
-                if(exception == null)
+                AddTask = null;
+
+                if (exception == null)
                     task.SetResult(result);
                 else
                     task.SetException(exception);
+
+                if (AddTask != null)
+                    await AddTask;
             };
 
             Func<Task> actionToAddToCollection =
@@ -142,11 +155,11 @@ namespace ProceduralDataflow
 
             if (firstVisit)
             {
-                collection.Add(actionToAddToCollection);
+                AddTask = collection.AddAsync(actionToAddToCollection);
             }
             else
             {
-                collectionForReentrantItems.Add(actionToAddToCollection);
+                AddTask = collectionForReentrantItems.AddAsync(actionToAddToCollection);
             }
 
             return task;

@@ -53,5 +53,19 @@ namespace ProceduralDataflow
 
             return tcs.Task;
         }
+
+        public Task EnqueueAction(Func<Task> action)
+        {
+            TaskCompletionSource<int> tcs = new TaskCompletionSource<int>();
+
+            queue.Add(() =>
+            {
+                action().Wait(); //This is sub-optimal. The non-CPU-bound part of the async action will also block the thread
+
+                tcs.SetResult(0);
+            });
+
+            return tcs.Task;
+        }
     }
 }

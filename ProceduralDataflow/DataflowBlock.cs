@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Nito.AsyncEx;
@@ -14,24 +15,27 @@ namespace ProceduralDataflow
 
         private readonly int? maximumDegreeOfParallelism;
 
-        private readonly AsyncCollection<Action> collection;
+        private readonly AsyncCollection<Func<Task>> collection;
 
-        private readonly AsyncCollection<Action> collectionForReentrantItems;
+        private readonly AsyncCollection<Func<Task>> collectionForReentrantItems;
 
         private readonly Guid nodeId;
 
-        private readonly ConcurrentQueue<Action> concurrentQueueForReentrantItems;
+        private readonly ConcurrentQueue<Func<Task>> concurrentQueueForReentrantItems;
+
+        [ThreadStatic]
+        private static Task AddTask;
 
         public DataflowBlock(IActionRunner actionRunner, int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
         {
             this.actionRunner = actionRunner;
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
 
-            collection = new AsyncCollection<Action>(new ConcurrentQueue<Action>(), maximumNumberOfActionsInQueue);
+            collection = new AsyncCollection<Func<Task>>(new ConcurrentQueue<Func<Task>>(), maximumNumberOfActionsInQueue);
 
-            concurrentQueueForReentrantItems = new ConcurrentQueue<Action>();
+            concurrentQueueForReentrantItems = new ConcurrentQueue<Func<Task>>();
 
-            collectionForReentrantItems = new AsyncCollection<Action>(concurrentQueueForReentrantItems);
+            collectionForReentrantItems = new AsyncCollection<Func<Task>>(concurrentQueueForReentrantItems);
 
             nodeId = Guid.NewGuid();
         }
@@ -47,7 +51,7 @@ namespace ProceduralDataflow
             if (firstVisit)
                 currentItem.VisitedNodes.Add(nodeId);
 
-            Action runAction = () =>
+            Func<Task> runAction = async () =>
             {
                 Exception exception = null;
 
@@ -62,36 +66,51 @@ namespace ProceduralDataflow
 
                 TrackingObject.CurrentProcessingItem.Value = currentItem;
 
+                AddTask = null;
+
                 if (exception == null)
                     task.SetResult();
                 else
                     task.SetException(exception);
+
+                if (AddTask != null)
+                    await AddTask;
             };
 
-            Action actionToAddToCollection =
+            Func<Task> actionToAddToCollection =
                 MakeActionRunInCurrentExecutionContextIfAny(runAction);
 
             TrackingObject.CurrentProcessingItem.Value = null;
 
             if (firstVisit)
             {
-                collection.Add(actionToAddToCollection);
+                AddTask = collection.AddAsync(actionToAddToCollection);
             }
             else
             {
-                collectionForReentrantItems.Add(actionToAddToCollection);
+                AddTask = collectionForReentrantItems.AddAsync(actionToAddToCollection);
             }
 
             return task;
         }
 
-        private Action MakeActionRunInCurrentExecutionContextIfAny(Action action)
+        private Func<Task> MakeActionRunInCurrentExecutionContextIfAny(Func<Task> action)
         {
             var executionContext = ExecutionContext.Capture();
 
             return executionContext == null
                 ? action
-                : (() => ExecutionContext.Run(executionContext, _ => action(), null));
+                : (async () =>
+                {
+                    Task task = null;
+
+                    ExecutionContext.Run(executionContext, _ =>
+                    {
+                        task = action();
+                    }, null);
+
+                    await task;
+                });
         }
 
         public DfTask<TResult> Run<TResult>(Func<TResult> function)
@@ -105,7 +124,7 @@ namespace ProceduralDataflow
             if (firstVisit)
                 currentItem.VisitedNodes.Add(nodeId);
 
-            Action runAction = () =>
+            Func<Task> runAction = async () =>
             {
                 TResult result = default(TResult);
 
@@ -122,24 +141,29 @@ namespace ProceduralDataflow
                 
                 TrackingObject.CurrentProcessingItem.Value = currentItem;
 
-                if(exception == null)
+                AddTask = null;
+
+                if (exception == null)
                     task.SetResult(result);
                 else
                     task.SetException(exception);
+
+                if (AddTask != null)
+                    await AddTask;
             };
 
-            Action actionToAddToCollection =
+            Func<Task> actionToAddToCollection =
                 MakeActionRunInCurrentExecutionContextIfAny(runAction);
 
             TrackingObject.CurrentProcessingItem.Value = null;
 
             if (firstVisit)
             {
-                collection.Add(actionToAddToCollection);
+                AddTask = collection.AddAsync(actionToAddToCollection);
             }
             else
             {
-                collectionForReentrantItems.Add(actionToAddToCollection);
+                AddTask = collectionForReentrantItems.AddAsync(actionToAddToCollection);
             }
 
             return task;
@@ -177,7 +201,7 @@ namespace ProceduralDataflow
             }
         }
 
-        private async Task<Action> GetAction()
+        private async Task<Func<Task>> GetAction()
         {
             if (!concurrentQueueForReentrantItems.IsEmpty)
             {
