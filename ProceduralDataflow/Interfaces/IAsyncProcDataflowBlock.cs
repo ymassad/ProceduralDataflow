@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace ProceduralDataflow.Interfaces
 {
-    public interface IAsyncDataflowBlock
+    public interface IAsyncProcDataflowBlock
     {
         DfTask Run(Func<Task> action);
 

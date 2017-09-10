@@ -555,11 +555,11 @@ namespace ProceduralDataflow.Tests
             });
         }
 
-        public static async Task CreateAndUseNewBlock(int numberOfThreads, int maximumNumberOfActionsInQueue, Func<IDataflowBlock, Task> action)
+        public static async Task CreateAndUseNewBlock(int numberOfThreads, int maximumNumberOfActionsInQueue, Func<IProcDataflowBlock, Task> action)
         {
             var runner = new ThreadPoolBasedActionRunner();
 
-            var node = new DataflowBlock(runner, maximumNumberOfActionsInQueue, numberOfThreads);
+            var node = new ProcDataflowBlock(runner, maximumNumberOfActionsInQueue, numberOfThreads);
 
             node.Start();
 
@@ -573,9 +573,9 @@ namespace ProceduralDataflow.Tests
             }
         }
 
-        public static async Task CreateAndUseNewAsyncBlock(int? maximumDegreeOfParallelism, int maximumNumberOfActionsInQueue, Func<IAsyncDataflowBlock, Task> action)
+        public static async Task CreateAndUseNewAsyncBlock(int? maximumDegreeOfParallelism, int maximumNumberOfActionsInQueue, Func<IAsyncProcDataflowBlock, Task> action)
         {
-            var node = new AsyncDataflowBlock(maximumNumberOfActionsInQueue, maximumDegreeOfParallelism);
+            var node = new AsyncProcDataflowBlock(maximumNumberOfActionsInQueue, maximumDegreeOfParallelism);
 
             node.Start();
 

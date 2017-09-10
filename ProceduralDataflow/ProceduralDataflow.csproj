@@ -65,18 +65,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncDataflowBlock.cs" />
+    <Compile Include="AsyncProcDataflowBlock.cs" />
     <Compile Include="CustomThreadsBasedActionRunner.cs" />
-    <Compile Include="DataflowBlock.cs" />
+    <Compile Include="ProcDataflowBlock.cs" />
     <Compile Include="DfTask.cs" />
     <Compile Include="DfTaskMethodBuilder.cs" />
     <Compile Include="Interfaces\IActionRunner.cs" />
-    <Compile Include="Interfaces\IAsyncDataflowBlock.cs" />
-    <Compile Include="Interfaces\IDataflowBlock.cs" />
+    <Compile Include="Interfaces\IAsyncProcDataflowBlock.cs" />
+    <Compile Include="Interfaces\IProcDataflowBlock.cs" />
     <Compile Include="Interfaces\IStartStopable.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ThreadPoolBasedActionRunner.cs" />
-    <Compile Include="TrackingObject.cs" />
+    <Compile Include="ListOfVisitedNodes.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

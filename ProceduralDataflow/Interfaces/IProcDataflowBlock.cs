@@ -2,7 +2,7 @@ using System;
 
 namespace ProceduralDataflow.Interfaces
 {
-    public interface IDataflowBlock
+    public interface IProcDataflowBlock
     {
         DfTask Run(Action action);
 

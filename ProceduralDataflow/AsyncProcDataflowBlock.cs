@@ -8,7 +8,7 @@ using ProceduralDataflow.Interfaces;
 
 namespace ProceduralDataflow
 {
-    public class AsyncDataflowBlock : IAsyncDataflowBlock, IStartStopable
+    public class AsyncProcDataflowBlock : IAsyncProcDataflowBlock, IStartStopable
     {
         private readonly int? maximumDegreeOfParallelism;
 
@@ -23,7 +23,7 @@ namespace ProceduralDataflow
         [ThreadStatic]
         private static Task AddTask;
 
-        public AsyncDataflowBlock(int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
+        public AsyncProcDataflowBlock(int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
         {
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
 
@@ -40,12 +40,12 @@ namespace ProceduralDataflow
         {
             var task = new DfTask();
 
-            var currentItem = TrackingObject.CurrentProcessingItem.Value ?? (TrackingObject.CurrentProcessingItem.Value = new TrackingObject());
+            var currentListOfVisitedNodes = ListOfVisitedNodes.Current.Value ?? (ListOfVisitedNodes.Current.Value = new ListOfVisitedNodes());
 
-            var firstVisit = !currentItem.VisitedNodes.Contains(nodeId);
+            var firstVisit = !currentListOfVisitedNodes.VisitedNodes.Contains(nodeId);
 
             if (firstVisit)
-                currentItem.VisitedNodes.Add(nodeId);
+                currentListOfVisitedNodes.VisitedNodes.Add(nodeId);
 
             Func<Task> runAction = async () =>
             {
@@ -60,7 +60,7 @@ namespace ProceduralDataflow
                     exception = ex;
                 }
 
-                TrackingObject.CurrentProcessingItem.Value = currentItem;
+                ListOfVisitedNodes.Current.Value = currentListOfVisitedNodes;
 
                 AddTask = null;
 
@@ -76,7 +76,7 @@ namespace ProceduralDataflow
             Func<Task> actionToAddToCollection =
                 MakeActionRunInCurrentExecutionContextIfAny(runAction);
 
-            TrackingObject.CurrentProcessingItem.Value = null;
+            ListOfVisitedNodes.Current.Value = null;
 
             if (firstVisit)
             {
@@ -113,12 +113,12 @@ namespace ProceduralDataflow
         {
             var task = new DfTask<TResult>();
 
-            var currentItem = TrackingObject.CurrentProcessingItem.Value ?? (TrackingObject.CurrentProcessingItem.Value = new TrackingObject());
+            var currentListOfVisitedNodes = ListOfVisitedNodes.Current.Value ?? (ListOfVisitedNodes.Current.Value = new ListOfVisitedNodes());
 
-            var firstVisit = !currentItem.VisitedNodes.Contains(nodeId);
+            var firstVisit = !currentListOfVisitedNodes.VisitedNodes.Contains(nodeId);
 
             if (firstVisit)
-                currentItem.VisitedNodes.Add(nodeId);
+                currentListOfVisitedNodes.VisitedNodes.Add(nodeId);
 
             Func<Task> runAction = async() =>
             {
@@ -135,7 +135,7 @@ namespace ProceduralDataflow
                     exception = ex;
                 }
 
-                TrackingObject.CurrentProcessingItem.Value = currentItem;
+                ListOfVisitedNodes.Current.Value = currentListOfVisitedNodes;
 
                 AddTask = null;
 
@@ -151,7 +151,7 @@ namespace ProceduralDataflow
             Func<Task> actionToAddToCollection =
                 MakeActionRunInCurrentExecutionContextIfAny(runAction);
 
-            TrackingObject.CurrentProcessingItem.Value = null;
+            ListOfVisitedNodes.Current.Value = null;
 
             if (firstVisit)
             {
