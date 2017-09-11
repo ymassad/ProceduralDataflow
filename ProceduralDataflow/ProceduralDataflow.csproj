@@ -70,6 +70,8 @@
   <ItemGroup>
     <Compile Include="AsyncProcDataflowBlock.cs" />
     <Compile Include="CustomThreadsBasedActionRunner.cs" />
+    <Compile Include="DfTaskOfTResult.cs" />
+    <Compile Include="DfTaskWhenAll.cs" />
     <Compile Include="ProcDataflowBlock.cs" />
     <Compile Include="DfTask.cs" />
     <Compile Include="DfTaskMethodBuilder.cs" />

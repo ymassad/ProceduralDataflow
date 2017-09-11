@@ -571,7 +571,7 @@ namespace ProceduralDataflow.Tests
         }
 
         [TestMethod]
-        public async Task DfTaskOfTWhenAllTest()
+        public async Task DfTaskOfTResultWhenAllTest()
         {
             await CreateAndUseNewBlock(1, 1, async runner1 =>
             {

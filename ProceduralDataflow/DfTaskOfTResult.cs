@@ -1,19 +1,12 @@
 using System;
-using System.Collections.Concurrent;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Tasks;
-using Nito.AsyncEx;
 
 namespace ProceduralDataflow
 {
-    [AsyncMethodBuilder(typeof(DfTaskMethodBuilder))]
-    public partial class DfTask : INotifyCompletion
+    [AsyncMethodBuilder(typeof(DfTaskMethodBuilder<>))]
+    public class DfTask<TResult> : INotifyCompletion
     {
-        [ThreadStatic]
-        public static bool AllowCompleteWithoutAwait;
-
         private Action continuationAction;
 
         private readonly ManualResetEvent manualResetEvent = new ManualResetEvent(false);
@@ -22,14 +15,18 @@ namespace ProceduralDataflow
 
         private Exception exception;
 
-        public DfTask GetAwaiter() => this;
+        private TResult result;
+
+        public DfTask<TResult> GetAwaiter() => this;
 
         public bool IsCompleted => isCompleted;
 
-        public void GetResult()
+        public TResult GetResult()
         {
             if (exception != null)
                 throw exception;
+
+            return result;
         }
 
         public void SetException(Exception ex)
@@ -39,8 +36,10 @@ namespace ProceduralDataflow
             Complete();
         }
 
-        public void SetResult()
+        public void SetResult(TResult value)
         {
+            result = value;
+
             Complete();
         }
 
@@ -61,8 +60,5 @@ namespace ProceduralDataflow
             continuationAction = continuation;
             manualResetEvent.Set();
         }
-
-        [ThreadStatic]
-        public static Task AsyncBlockingTask;
     }
 }
