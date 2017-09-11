@@ -58,6 +58,56 @@ namespace ProceduralDataflow.Tests
                 new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 });
         }
 
+        [TestMethod]
+        public async Task FastProducerThatThrowsAnExceptionWillBeSlowedBySlowConsumerThatCatchesTheException()
+        {
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
+            {
+                await CreateAndUseNewBlock(1, 1, async runner2 =>
+                {
+                    long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
+
+                    long numberOfTimesFirstOperationWasRun = 0;
+
+                    long numberOfTimesSecondOperationWasRun = 0;
+
+                    async Task Method1()
+                    {
+                        try
+                        {
+                            await runner1.Run(() =>
+                            {
+                                SimulateWork(TimeSpan.Zero, ref numberOfTimesFirstOperationWasRun);
+
+                                throw new Exception("Error message");
+                            });
+                        }
+                        catch
+                        {
+                            await runner2.Run(() =>
+                            {
+                                SimulateWork(
+                                    TimeSpan.FromMilliseconds(100),
+                                    ref numberOfTimesSecondOperationWasRun,
+                                    ref numberOfTimesFirstOperationWasRun,
+                                    numberOfTimesFirstOperationWasRunWhenSecondOperationRuns);
+                            });
+                        }
+                    }
+
+                    var tasks = Enumerable.Range(0, 10).Select(_ => Method1()).ToArray();
+
+                    await Task.WhenAll(tasks);
+
+                    PossibleValuesComparer
+                        .AreEqual(
+                            numberOfTimesFirstOperationWasRunWhenSecondOperationRuns,
+                            new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 })
+                        .Should().BeTrue();
+                });
+            });
+        }
+
         //TODO: add more tests for the async version
         [TestMethod]
         public async Task FastProducerWillBeSlowedBySlowConsumerForAsyncVersion()
