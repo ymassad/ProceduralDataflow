@@ -61,6 +61,9 @@ namespace ProceduralDataflow
                             {
                                 int i1 = i;
 
+                                if(i1 == index1)
+                                    continue;
+
                                 AsyncBlockingTask.ContinueWith(t =>
                                     taskCompletionSources[i1].TryCompleteFromCompletedTask(t));
                             }
@@ -69,9 +72,10 @@ namespace ProceduralDataflow
                         {
                             for (int i = 0; i < tasks.Length; i++)
                             {
-                                int i1 = i;
+                                if (i == index1)
+                                    continue;
 
-                                taskCompletionSources[i1].SetResult();
+                                taskCompletionSources[i].SetResult();
                             }
                         }
                     }
@@ -133,6 +137,9 @@ namespace ProceduralDataflow
                             {
                                 int i1 = i;
 
+                                if(i1 == index1)
+                                    continue;
+
                                 AsyncBlockingTask.ContinueWith(t =>
                                     taskCompletionSources[i1].TryCompleteFromCompletedTask(t));
                             }
@@ -141,9 +148,10 @@ namespace ProceduralDataflow
                         {
                             for (int i = 0; i < tasks.Length; i++)
                             {
-                                int i1 = i;
+                                if (i == index1)
+                                    continue;
 
-                                taskCompletionSources[i1].SetResult();
+                                taskCompletionSources[i].SetResult();
                             }
                         }
                     }

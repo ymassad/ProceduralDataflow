@@ -72,6 +72,11 @@
     <Compile Include="CustomThreadsBasedActionRunner.cs" />
     <Compile Include="DfTaskOfTResult.cs" />
     <Compile Include="DfTaskWhenAll.cs" />
+    <Compile Include="DfTaskWhenAllDifferentTResults.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DfTaskWhenAllDifferentTResults.tt</DependentUpon>
+    </Compile>
     <Compile Include="ProcDataflowBlock.cs" />
     <Compile Include="DfTask.cs" />
     <Compile Include="DfTaskMethodBuilder.cs" />
@@ -85,6 +90,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="DfTaskWhenAllDifferentTResults.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DfTaskWhenAllDifferentTResults.cs</LastGenOutput>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.21\build\Microsoft.Bcl.Build.targets')" />

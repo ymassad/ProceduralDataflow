@@ -1,0 +1,117 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+
+using System;
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading;
+using Nito.AsyncEx;
+
+namespace ProceduralDataflow
+{
+
+	public partial class DfTask
+	{
+<#
+	for(int i = 2 ; i<= 10 ; i++)
+		DoForNumberOfGenericParams(i);
+#>
+
+<#
+	
+	void DoForNumberOfGenericParams(int number)
+	{
+#>
+		public static DfTask<TResult> WhenAll<TResult,<#= string.Join(", ", Enumerable.Range(1, number).Select(x => "T" + x.ToString()))#>>(<#=string.Join(", ", Enumerable.Range(1, number).Select(x => "DfTask<T" + x.ToString() + "> task" + x.ToString()))#>, Func<<#=string.Join(", ", Enumerable.Range(1, number).Select(x => "T" + x.ToString()))#>,TResult> resultCombiner)
+        {
+            DfTask<TResult> resultTask = new DfTask<TResult>();
+
+            long totalCompleted = 0;
+
+            long totalShouldComplete = <#= number#>;
+
+<#
+			for(int i = 1 ; i <= number; i++)
+			{
+#>
+			T<#=i#> task<#=i#>Result = default(T<#=i#>);
+
+			TaskCompletionSource tcs<#=i#> = new TaskCompletionSource();
+<#
+			}
+#>
+
+            ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
+
+<#
+			for(int i = 1 ; i <= number; i++)
+			{
+#>
+
+            task<#=i#>.OnCompleted(() =>
+            {
+                try
+                {
+                    task<#=i#>Result = task<#=i#>.GetResult();
+                }
+                catch (Exception e)
+                {
+                    errors.Enqueue(e);
+                }
+
+                if (Interlocked.Increment(ref totalCompleted) != totalShouldComplete)
+                {
+                    AsyncBlockingTask = tcs<#=i#>.Task;
+                }
+                else
+                {
+                    AsyncBlockingTask = null;
+
+                    if (errors.Any())
+                        resultTask.SetException(new AggregateException(errors.ToArray()));
+                    else
+                        resultTask.SetResult(resultCombiner(<#= string.Join(", ", Enumerable.Range(1, number).Select(x => "task" + x.ToString() + "Result"))#>));
+
+                    if (AsyncBlockingTask != null)
+                    {
+<#
+						for(int j = 1 ; j <= number; j++)
+						{
+							if(i == j)
+								continue;
+#>
+                        AsyncBlockingTask.ContinueWith(t =>
+                            tcs<#=j#>.TryCompleteFromCompletedTask(t));
+<#
+						}
+#>
+                    }
+                    else
+                    {
+<#
+						for(int j = 1 ; j <= number; j++)
+						{
+							if(i == j)
+								continue;
+#>
+                        tcs<#=j#>.SetResult();
+<#
+						}
+#>
+                    }
+                }
+            });
+<#
+			}
+#>
+            return resultTask;
+        }
+<#
+	}
+#>
+	}
+}

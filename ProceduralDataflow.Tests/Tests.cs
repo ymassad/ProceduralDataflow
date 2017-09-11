@@ -706,6 +706,90 @@ namespace ProceduralDataflow.Tests
 
         }
 
+        [TestMethod]
+        public async Task DfTaskOfTResultWhenAllThatTakesDfTasksOfDifferentTypesTest()
+        {
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
+            {
+                await CreateAndUseNewBlock(1, 1, async runner2 =>
+                {
+                    await CreateAndUseNewBlock(1, 1, async runner3 =>
+                    {
+                        long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
+
+                        long[] numberOfTimesSecondOperationWasRunWhenThirdOperationRuns = new long[10];
+
+                        long[] numberOfTimesFirstOperationWasRunWhenThirdOperationRuns = new long[10];
+
+                        long numberOfTimesFirstOperationWasRun = 0;
+
+                        long numberOfTimesSecondOperationWasRun = 0;
+
+                        long numberOfTimesThirdOperationWasRun = 0;
+
+                        long numberOfTimesThirdOperationWasRun2 = 0;
+
+                        async Task Method1()
+                        {
+                            var dfTask1 = runner1.Run(() =>
+                            {
+                                SimulateWork(TimeSpan.FromMilliseconds(0), ref numberOfTimesFirstOperationWasRun);
+
+                                return 1;
+                            });
+
+                            var dfTask2 = runner2.Run(() =>
+                            {
+                                SimulateWork(
+                                    TimeSpan.FromMilliseconds(0),
+                                    ref numberOfTimesSecondOperationWasRun,
+                                    ref numberOfTimesFirstOperationWasRun,
+                                    numberOfTimesFirstOperationWasRunWhenSecondOperationRuns);
+
+                                return "yes";
+                            });
+
+                            var results = await DfTask.WhenAll(dfTask1, dfTask2, (x,y) => x + y);
+
+                            results.Should().Be("1yes");
+
+                            await runner3.Run(() =>
+                            {
+                                SimulateWork(
+                                    TimeSpan.FromMilliseconds(100),
+                                    ref numberOfTimesThirdOperationWasRun,
+                                    ref numberOfTimesSecondOperationWasRun,
+                                    numberOfTimesSecondOperationWasRunWhenThirdOperationRuns);
+
+                                SimulateWork(
+                                    TimeSpan.FromMilliseconds(0),
+                                    ref numberOfTimesThirdOperationWasRun2,
+                                    ref numberOfTimesFirstOperationWasRun,
+                                    numberOfTimesFirstOperationWasRunWhenThirdOperationRuns);
+                            });
+
+                        }
+                        var tasks = Enumerable.Range(0, 10).Select(_ => Method1()).ToArray();
+
+                        await Task.WhenAll(tasks);
+
+                        PossibleValuesComparer
+                            .AreEqual(
+                                numberOfTimesSecondOperationWasRunWhenThirdOperationRuns,
+                                new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 })
+                            .Should().BeTrue();
+
+                        PossibleValuesComparer
+                            .AreEqual(
+                                numberOfTimesFirstOperationWasRunWhenThirdOperationRuns,
+                                new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 })
+                            .Should().BeTrue();
+                    });
+                });
+            });
+
+        }
+
 
         [TestMethod]
         public async Task MultipleStepsRunTogether_2ThreadsPerStep()
