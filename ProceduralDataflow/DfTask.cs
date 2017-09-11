@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
 using Nito.AsyncEx;
 
 namespace ProceduralDataflow
@@ -94,24 +95,24 @@ namespace ProceduralDataflow
 
                     if (Interlocked.Increment(ref totalCompleted) != totalShouldComplete)
                     {
-                        ProcDataflowBlock.AsyncBlockingTask = taskCompletionSources[index1].Task;
+                        AsyncBlockingTask = taskCompletionSources[index1].Task;
                     }
                     else
                     {
-                        ProcDataflowBlock.AsyncBlockingTask = null;
+                        AsyncBlockingTask = null;
 
                         if (errors.Count > 0)
                             resultTask.SetException(new AggregateException(errors.ToArray()));
                         else
                             resultTask.SetResult();
 
-                        if (ProcDataflowBlock.AsyncBlockingTask != null)
+                        if (AsyncBlockingTask != null)
                         {
                             for (int i = 0; i < tasks.Length; i++)
                             {
                                 int i1 = i;
 
-                                ProcDataflowBlock.AsyncBlockingTask.ContinueWith(t =>
+                                AsyncBlockingTask.ContinueWith(t =>
                                     taskCompletionSources[i1].TryCompleteFromCompletedTask(t));
                             }
                         }
@@ -166,24 +167,24 @@ namespace ProceduralDataflow
 
                     if (Interlocked.Increment(ref totalCompleted) != totalShouldComplete)
                     {
-                        ProcDataflowBlock.AsyncBlockingTask = taskCompletionSources[index1].Task;
+                        AsyncBlockingTask = taskCompletionSources[index1].Task;
                     }
                     else
                     {
-                        ProcDataflowBlock.AsyncBlockingTask = null;
+                        AsyncBlockingTask = null;
 
                         if (errors.Count > 0)
                             resultTask.SetException(new AggregateException(errors.ToArray()));
                         else
                             resultTask.SetResult(results.OrderBy(x => x.index).Select(x => x.value).ToArray());
 
-                        if (ProcDataflowBlock.AsyncBlockingTask != null)
+                        if (AsyncBlockingTask != null)
                         {
                             for (int i = 0; i < tasks.Length; i++)
                             {
                                 int i1 = i;
 
-                                ProcDataflowBlock.AsyncBlockingTask.ContinueWith(t =>
+                                AsyncBlockingTask.ContinueWith(t =>
                                     taskCompletionSources[i1].TryCompleteFromCompletedTask(t));
                             }
                         }
@@ -203,6 +204,8 @@ namespace ProceduralDataflow
             return resultTask;
         }
 
+        [ThreadStatic]
+        public static Task AsyncBlockingTask;
     }
 
     [AsyncMethodBuilder(typeof(DfTaskMethodBuilder<>))]

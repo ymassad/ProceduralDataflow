@@ -23,9 +23,6 @@ namespace ProceduralDataflow
 
         private readonly ConcurrentQueue<Func<Task>> concurrentQueueForReentrantItems;
 
-        [ThreadStatic]
-        public static Task AsyncBlockingTask;
-
         public ProcDataflowBlock(IActionRunner actionRunner, int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
         {
             this.actionRunner = actionRunner;
@@ -66,15 +63,15 @@ namespace ProceduralDataflow
 
                 ListOfVisitedNodes.Current.Value = currentListOfVisitedNodes;
 
-                AsyncBlockingTask = null;
+                DfTask.AsyncBlockingTask = null;
 
                 if (exception == null)
                     task.SetResult();
                 else
                     task.SetException(exception);
 
-                if (AsyncBlockingTask != null)
-                    await AsyncBlockingTask;
+                if (DfTask.AsyncBlockingTask != null)
+                    await DfTask.AsyncBlockingTask;
             };
 
             Func<Task> actionToAddToCollection =
@@ -84,11 +81,11 @@ namespace ProceduralDataflow
 
             if (firstVisit)
             {
-                AsyncBlockingTask = collection.AddAsync(actionToAddToCollection);
+                DfTask.AsyncBlockingTask = collection.AddAsync(actionToAddToCollection);
             }
             else
             {
-                AsyncBlockingTask = collectionForReentrantItems.AddAsync(actionToAddToCollection);
+                DfTask.AsyncBlockingTask = collectionForReentrantItems.AddAsync(actionToAddToCollection);
             }
 
             return task;
@@ -141,15 +138,15 @@ namespace ProceduralDataflow
                 
                 ListOfVisitedNodes.Current.Value = currentListOfVisitedNodes;
 
-                AsyncBlockingTask = null;
+                DfTask.AsyncBlockingTask = null;
 
                 if (exception == null)
                     task.SetResult(result);
                 else
                     task.SetException(exception);
 
-                if (AsyncBlockingTask != null)
-                    await AsyncBlockingTask;
+                if (DfTask.AsyncBlockingTask != null)
+                    await DfTask.AsyncBlockingTask;
             };
 
             Func<Task> actionToAddToCollection =
@@ -159,11 +156,11 @@ namespace ProceduralDataflow
 
             if (firstVisit)
             {
-                AsyncBlockingTask = collection.AddAsync(actionToAddToCollection);
+                DfTask.AsyncBlockingTask = collection.AddAsync(actionToAddToCollection);
             }
             else
             {
-                AsyncBlockingTask = collectionForReentrantItems.AddAsync(actionToAddToCollection);
+                DfTask.AsyncBlockingTask = collectionForReentrantItems.AddAsync(actionToAddToCollection);
             }
 
             return task;
