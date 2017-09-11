@@ -492,7 +492,7 @@ namespace ProceduralDataflow.Tests
         }
 
         [TestMethod]
-        public async Task DfWhenAllTest()
+        public async Task DfTaskWhenAllTest()
         {
             await CreateAndUseNewBlock(1, 1, async runner1 =>
             {
@@ -531,6 +531,92 @@ namespace ProceduralDataflow.Tests
                             });
 
                             await DfTask.WhenAll(dfTask1, dfTask2);
+
+                            await runner3.Run(() =>
+                            {
+                                SimulateWork(
+                                    TimeSpan.FromMilliseconds(100),
+                                    ref numberOfTimesThirdOperationWasRun,
+                                    ref numberOfTimesSecondOperationWasRun,
+                                    numberOfTimesSecondOperationWasRunWhenThirdOperationRuns);
+
+                                SimulateWork(
+                                    TimeSpan.FromMilliseconds(0),
+                                    ref numberOfTimesThirdOperationWasRun2,
+                                    ref numberOfTimesFirstOperationWasRun,
+                                    numberOfTimesFirstOperationWasRunWhenThirdOperationRuns);
+                            });
+
+                        }
+                        var tasks = Enumerable.Range(0, 10).Select(_ => Method1()).ToArray();
+
+                        await Task.WhenAll(tasks);
+
+                        PossibleValuesComparer
+                            .AreEqual(
+                                numberOfTimesSecondOperationWasRunWhenThirdOperationRuns,
+                                new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 })
+                            .Should().BeTrue();
+
+                        PossibleValuesComparer
+                            .AreEqual(
+                                numberOfTimesFirstOperationWasRunWhenThirdOperationRuns,
+                                new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 })
+                            .Should().BeTrue();
+
+                    });
+                });
+            });
+
+        }
+
+        [TestMethod]
+        public async Task DfTaskOfTWhenAllTest()
+        {
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
+            {
+                await CreateAndUseNewBlock(1, 1, async runner2 =>
+                {
+                    await CreateAndUseNewBlock(1, 1, async runner3 =>
+                    {
+                        long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
+
+                        long[] numberOfTimesSecondOperationWasRunWhenThirdOperationRuns = new long[10];
+
+                        long[] numberOfTimesFirstOperationWasRunWhenThirdOperationRuns = new long[10];
+
+                        long numberOfTimesFirstOperationWasRun = 0;
+
+                        long numberOfTimesSecondOperationWasRun = 0;
+
+                        long numberOfTimesThirdOperationWasRun = 0;
+
+                        long numberOfTimesThirdOperationWasRun2 = 0;
+
+                        async Task Method1()
+                        {
+                            var dfTask1 = runner1.Run(() =>
+                            {
+                                SimulateWork(TimeSpan.FromMilliseconds(0), ref numberOfTimesFirstOperationWasRun);
+
+                                return 1;
+                            });
+
+                            var dfTask2 = runner2.Run(() =>
+                            {
+                                SimulateWork(
+                                    TimeSpan.FromMilliseconds(0),
+                                    ref numberOfTimesSecondOperationWasRun,
+                                    ref numberOfTimesFirstOperationWasRun,
+                                    numberOfTimesFirstOperationWasRunWhenSecondOperationRuns);
+
+                                return 2;
+                            });
+
+                            var results =  await DfTask.WhenAll(dfTask1, dfTask2);
+
+                            results[0].Should().Be(1);
+                            results[1].Should().Be(2);
 
                             await runner3.Run(() =>
                             {
