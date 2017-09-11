@@ -24,7 +24,7 @@ namespace ProceduralDataflow
         private readonly ConcurrentQueue<Func<Task>> concurrentQueueForReentrantItems;
 
         [ThreadStatic]
-        private static Task AsyncBlockingTask;
+        public static Task AsyncBlockingTask;
 
         public ProcDataflowBlock(IActionRunner actionRunner, int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
         {

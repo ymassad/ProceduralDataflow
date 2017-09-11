@@ -234,11 +234,9 @@ namespace ProceduralDataflow.Tests
                         await Part2();
                     }
 
-
                     var tasks = Enumerable.Range(0, 10).Select(_ => Method1()).ToArray();
 
                     await Task.WhenAll(tasks);
-
 
                     PossibleValuesComparer
                         .AreEqual(
@@ -446,7 +444,7 @@ namespace ProceduralDataflow.Tests
                     {
                         long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
 
-                        long[] numberOfTimesSecondOperationWasRunWhenSecondOperationRuns = new long[10];
+                        long[] numberOfTimesSecondOperationWasRunWhenThirdOperationRuns = new long[10];
 
                         long numberOfTimesFirstOperationWasRun = 0;
 
@@ -476,7 +474,7 @@ namespace ProceduralDataflow.Tests
                                     TimeSpan.FromMilliseconds(100),
                                     ref numberOfTimesThirdOperationWasRun,
                                     ref numberOfTimesSecondOperationWasRun,
-                                    numberOfTimesSecondOperationWasRunWhenSecondOperationRuns);
+                                    numberOfTimesSecondOperationWasRunWhenThirdOperationRuns);
                             });
 
                         }
@@ -488,11 +486,88 @@ namespace ProceduralDataflow.Tests
                         await Task.WhenAll(tasks);
 
                         sw.Elapsed.Should().BeCloseTo(TimeSpan.FromMilliseconds(1200), 100);
-
-                        //TODO: check numberOfTimesFirstOperationWasRunWhenSecondOperationRuns and numberOfTimesSecondOperationWasRunWhenSecondOperationRuns?
                     });
                 });
             });
+        }
+
+        [TestMethod]
+        public async Task DfWhenAllTest()
+        {
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
+            {
+                await CreateAndUseNewBlock(1, 1, async runner2 =>
+                {
+                    await CreateAndUseNewBlock(1, 1, async runner3 =>
+                    {
+                        long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
+
+                        long[] numberOfTimesSecondOperationWasRunWhenThirdOperationRuns = new long[10];
+
+                        long[] numberOfTimesFirstOperationWasRunWhenThirdOperationRuns = new long[10];
+
+                        long numberOfTimesFirstOperationWasRun = 0;
+
+                        long numberOfTimesSecondOperationWasRun = 0;
+
+                        long numberOfTimesThirdOperationWasRun = 0;
+
+                        long numberOfTimesThirdOperationWasRun2 = 0;
+
+                        async Task Method1()
+                        {
+                            var dfTask1 =  runner1.Run(() =>
+                            {
+                                SimulateWork(TimeSpan.FromMilliseconds(0), ref numberOfTimesFirstOperationWasRun);
+                            });
+
+                            var dfTask2 = runner2.Run(() =>
+                            {
+                                SimulateWork(
+                                    TimeSpan.FromMilliseconds(0),
+                                    ref numberOfTimesSecondOperationWasRun,
+                                    ref numberOfTimesFirstOperationWasRun,
+                                    numberOfTimesFirstOperationWasRunWhenSecondOperationRuns);
+                            });
+
+                            await DfTask.WhenAll(dfTask1, dfTask2);
+
+                            await runner3.Run(() =>
+                            {
+                                SimulateWork(
+                                    TimeSpan.FromMilliseconds(100),
+                                    ref numberOfTimesThirdOperationWasRun,
+                                    ref numberOfTimesSecondOperationWasRun,
+                                    numberOfTimesSecondOperationWasRunWhenThirdOperationRuns);
+
+                                SimulateWork(
+                                    TimeSpan.FromMilliseconds(0),
+                                    ref numberOfTimesThirdOperationWasRun2,
+                                    ref numberOfTimesFirstOperationWasRun,
+                                    numberOfTimesFirstOperationWasRunWhenThirdOperationRuns);
+                            });
+
+                        }
+                        var tasks = Enumerable.Range(0, 10).Select(_ => Method1()).ToArray();
+
+                        await Task.WhenAll(tasks);
+
+                        PossibleValuesComparer
+                            .AreEqual(
+                                numberOfTimesSecondOperationWasRunWhenThirdOperationRuns,
+                                new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 })
+                            .Should().BeTrue();
+
+                        PossibleValuesComparer
+                            .AreEqual(
+                                numberOfTimesFirstOperationWasRunWhenThirdOperationRuns,
+                                new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 })
+                            .Should().BeTrue();
+
+                    });
+                });
+            });
+
         }
 
 
@@ -507,7 +582,7 @@ namespace ProceduralDataflow.Tests
                     {
                         long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
 
-                        long[] numberOfTimesSecondOperationWasRunWhenSecondOperationRuns = new long[10];
+                        long[] numberOfTimesSecondOperationWasRunWhenThirdOperationRuns = new long[10];
 
                         long numberOfTimesFirstOperationWasRun = 0;
 
@@ -537,7 +612,7 @@ namespace ProceduralDataflow.Tests
                                     TimeSpan.FromMilliseconds(100),
                                     ref numberOfTimesThirdOperationWasRun,
                                     ref numberOfTimesSecondOperationWasRun,
-                                    numberOfTimesSecondOperationWasRunWhenSecondOperationRuns);
+                                    numberOfTimesSecondOperationWasRunWhenThirdOperationRuns);
                             });
                         }
 
@@ -548,8 +623,6 @@ namespace ProceduralDataflow.Tests
                         await Task.WhenAll(tasks);
 
                         sw.Elapsed.Should().BeCloseTo(TimeSpan.FromMilliseconds(700), 100);
-
-                        //TODO: check numberOfTimesFirstOperationWasRunWhenSecondOperationRuns and numberOfTimesSecondOperationWasRunWhenSecondOperationRuns?
                     });
                 });
             });
