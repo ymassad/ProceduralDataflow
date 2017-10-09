@@ -21,8 +21,6 @@ namespace ProceduralDataflow
 
         private readonly Guid nodeId;
 
-        private readonly ConcurrentQueue<Func<Task>> concurrentQueueForReentrantItems;
-
         public ProcDataflowBlock(IActionRunner actionRunner, int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
         {
             this.actionRunner = actionRunner;
@@ -30,9 +28,7 @@ namespace ProceduralDataflow
 
             collection = new AsyncCollection<Func<Task>>(new ConcurrentQueue<Func<Task>>(), maximumNumberOfActionsInQueue);
 
-            concurrentQueueForReentrantItems = new ConcurrentQueue<Func<Task>>();
-
-            collectionForReentrantItems = new AsyncCollection<Func<Task>>(concurrentQueueForReentrantItems);
+            collectionForReentrantItems = new AsyncCollection<Func<Task>>(new ConcurrentQueue<Func<Task>>());
 
             nodeId = Guid.NewGuid();
         }
@@ -200,14 +196,11 @@ namespace ProceduralDataflow
 
         private async Task<Func<Task>> GetAction()
         {
-            if (!concurrentQueueForReentrantItems.IsEmpty)
-            {
-                var reentrantItemResult = await collectionForReentrantItems.TryTakeAsync();
+            var reentrantItemTakeResult = collectionForReentrantItems.TryTakeImmediatlyOrReturnNull();
 
-                if (reentrantItemResult.Success)
-                {
-                    return reentrantItemResult.Item;
-                }
+            if (reentrantItemTakeResult != null && reentrantItemTakeResult.Success)
+            {
+                return reentrantItemTakeResult.Item;
             }
 
             var itemResult = await new[] { collectionForReentrantItems, collection }.TryTakeFromAnyAsync();

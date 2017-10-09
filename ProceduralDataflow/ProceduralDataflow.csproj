@@ -77,6 +77,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DfTaskWhenAllDifferentTResults.tt</DependentUpon>
     </Compile>
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="ProcDataflowBlock.cs" />
     <Compile Include="DfTask.cs" />
     <Compile Include="DfTaskMethodBuilder.cs" />
