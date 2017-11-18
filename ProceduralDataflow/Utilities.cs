@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Nito.AsyncEx;
 
 namespace ProceduralDataflow
@@ -23,6 +25,25 @@ namespace ProceduralDataflow
                 return null;
 
             return itemResult.Item;
+        }
+
+        public static Func<Task> MakeActionRunInCurrentExecutionContextIfAny(Func<Task> action)
+        {
+            var executionContext = ExecutionContext.Capture();
+
+            return executionContext == null
+                ? action
+                : (async () =>
+                {
+                    Task task = null;
+
+                    ExecutionContext.Run(executionContext, _ =>
+                    {
+                        task = action();
+                    }, null);
+
+                    await task;
+                });
         }
     }
 }

@@ -71,7 +71,7 @@ namespace ProceduralDataflow
             };
 
             Func<Task> actionToAddToCollection =
-                MakeActionRunInCurrentExecutionContextIfAny(runAction);
+                Utilities.MakeActionRunInCurrentExecutionContextIfAny(runAction);
 
             ListOfVisitedNodes.Current.Value = null;
 
@@ -85,25 +85,6 @@ namespace ProceduralDataflow
             }
 
             return task;
-        }
-
-        private Func<Task> MakeActionRunInCurrentExecutionContextIfAny(Func<Task> action)
-        {
-            var executionContext = ExecutionContext.Capture();
-
-            return executionContext == null
-                ? action
-                : (async () =>
-                {
-                    Task task = null;
-
-                    ExecutionContext.Run(executionContext, _ =>
-                    {
-                        task = action();
-                    }, null);
-
-                    await task;
-                });
         }
 
         public DfTask<TResult> Run<TResult>(Func<TResult> function)
@@ -146,7 +127,7 @@ namespace ProceduralDataflow
             };
 
             Func<Task> actionToAddToCollection =
-                MakeActionRunInCurrentExecutionContextIfAny(runAction);
+                Utilities.MakeActionRunInCurrentExecutionContextIfAny(runAction);
 
             ListOfVisitedNodes.Current.Value = null;
 
