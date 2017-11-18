@@ -193,19 +193,7 @@ namespace ProceduralDataflow
 
         private async Task<Func<Task>> GetAction()
         {
-            var reentrantItemTakeResult = collectionForReentrantItems.TryTakeImmediatlyOrReturnNull();
-
-            if (reentrantItemTakeResult != null && reentrantItemTakeResult.Success)
-            {
-                return reentrantItemTakeResult.Item;   
-            }
-
-            var itemResult = await new[] { collectionForReentrantItems, collection }.TryTakeFromAnyAsync();
-
-            if(!itemResult.Success)
-                return null;
-
-            return itemResult.Item;
+            return await Utilities.TakeItemFromAnyCollectionWithPriorityToFirstCollection(collectionForReentrantItems, collection);
         }
 
         public void Stop()
