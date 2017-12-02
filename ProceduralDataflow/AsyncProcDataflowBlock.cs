@@ -18,7 +18,9 @@ namespace ProceduralDataflow
 
         private readonly Guid nodeId;
         
-        public AsyncProcDataflowBlock(int maximumNumberOfActionsInQueue, int? maximumDegreeOfParallelism)
+        public AsyncProcDataflowBlock(
+            int maximumNumberOfActionsInQueue,
+            int? maximumDegreeOfParallelism)
         {
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
 
@@ -181,6 +183,20 @@ namespace ProceduralDataflow
         {
             collection.CompleteAdding();
             collectionForReentrantItems.CompleteAdding();
+        }
+
+        public static AsyncProcDataflowBlock StartDefault(
+            int maximumNumberOfActionsInQueue,
+            int? maximumDegreeOfParallelism)
+        {
+            var block =
+                new AsyncProcDataflowBlock(
+                    maximumNumberOfActionsInQueue,
+                    maximumDegreeOfParallelism);
+
+            block.Start();
+
+            return block;
         }
     }
 }

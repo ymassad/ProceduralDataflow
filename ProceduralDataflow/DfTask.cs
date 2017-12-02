@@ -16,7 +16,7 @@ namespace ProceduralDataflow
 
         private Action continuationAction;
 
-        private readonly ManualResetEvent manualResetEvent = new ManualResetEvent(false);
+        private readonly ManualResetEventSlim manualResetEvent = new ManualResetEventSlim(false);
 
         private volatile bool isCompleted;
 
@@ -48,7 +48,9 @@ namespace ProceduralDataflow
         {
             if (!DfTask.AllowCompleteWithoutAwait)
             {
-                manualResetEvent.WaitOne();
+                manualResetEvent.Wait();
+
+                manualResetEvent.Dispose();
 
                 continuationAction();
             }
