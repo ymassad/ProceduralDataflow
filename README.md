@@ -22,3 +22,8 @@ The .NET framework already contains APIs to help developers create dataflows. Fo
 And have the framework know how to connect the blocks together.
 
 This is exactly what ProceduralDataflow does.
+
+I have published a pre-release version at Nuget. You can find it here:
+https://www.nuget.org/packages/YMassad.ProceduralDataflow/0.9.1-alpha
+
+If you try to find it from within visual studio, you need to check the box to include pre-released packages.
