@@ -27,3 +27,5 @@ I have published a pre-release version at Nuget. You can find it here:
 https://www.nuget.org/packages/YMassad.ProceduralDataflow/0.9.1-alpha
 
 If you try to find it from within visual studio, you need to check the box to include pre-released packages.
+
+I have written an article about the dataflow pattern in .NET and the ProceduralDataflow library. You can read it here: http://www.dotnetcurry.com/patterns-practices/1412/dataflow-pattern-csharp-dotnet
