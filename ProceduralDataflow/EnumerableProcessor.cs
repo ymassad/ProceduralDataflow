@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ProceduralDataflow
@@ -9,12 +10,15 @@ namespace ProceduralDataflow
         public static async Task ProcessEnumerable<TInput>(
             IEnumerable<TInput> enumerable,
             Func<TInput, Task> action,
-            int maximumNumberOfNotCompletedTasks)
+            int maximumNumberOfNotCompletedTasks,
+            CancellationToken cancellationToken = default)
         {
             List<Task> tasks = new List<Task>();
 
             foreach (var dataItem in enumerable)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var task = action(dataItem);
 
                 tasks.Add(task);
@@ -29,6 +33,8 @@ namespace ProceduralDataflow
 
             while (tasks.Count > 0)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 await tasks[tasks.Count - 1];
 
                 tasks.RemoveAt(tasks.Count - 1);
@@ -40,7 +46,8 @@ namespace ProceduralDataflow
             Func<TInput, Task<TOutput>> action,
             TResult seed,
             Func<TResult,TOutput,TResult> accumulator,
-            int maximumNumberOfNotCompletedTasks)
+            int maximumNumberOfNotCompletedTasks,
+            CancellationToken cancellationToken = default)
         {
             List<Task<TOutput>> tasks = new List<Task<TOutput>>();
 
@@ -48,6 +55,8 @@ namespace ProceduralDataflow
 
             foreach (var dataItem in enumerable)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var task = action(dataItem);
 
                 tasks.Add(task);
@@ -64,6 +73,8 @@ namespace ProceduralDataflow
 
             while (tasks.Count > 0)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 var output = await tasks[tasks.Count - 1];
 
                 result = accumulator(result, output);

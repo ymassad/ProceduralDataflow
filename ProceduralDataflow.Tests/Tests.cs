@@ -848,11 +848,99 @@ namespace ProceduralDataflow.Tests
             });
         }
 
-        public static async Task CreateAndUseNewBlock(int numberOfThreads, int maximumNumberOfActionsInQueue, Func<IProcDataflowBlock, Task> action)
+        [TestMethod]
+        public async Task CancellationTokenIsRespectedInProcDataflowBlock()
+        {
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            await CreateAndUseNewBlock(1, 1, async runner1 =>
+            {
+                long numberOfTimesFirstOperationWasRun = 0;
+
+                async Task Method1()
+                {
+
+                    await runner1.Run(() =>
+                    {
+                        numberOfTimesFirstOperationWasRun++;
+
+                        if (numberOfTimesFirstOperationWasRun == 2)
+                            cts.Cancel();
+                    });
+                }
+
+                var tasks = Enumerable.Range(0, 10).Select(_ => Method1()).ToArray();
+
+                try
+                {
+                    await Task.WhenAll(tasks);
+                }
+                catch //WhenAll becomes faulted if any task is faulted. We expect two tasks to be faulted.
+                {
+
+                }
+
+                Assert.AreEqual(2, numberOfTimesFirstOperationWasRun);
+
+                Assert.IsTrue(tasks.Count(x => x.Status == TaskStatus.RanToCompletion) == 2);
+
+                Assert.IsTrue(tasks.Count(x => x.Status == TaskStatus.Canceled) == 8);
+
+            }, cts.Token);
+
+        }
+
+        [TestMethod]
+        public async Task CancellationTokenIsRespectedInAsyncProcDataflowBlock()
+        {
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            await CreateAndUseNewAsyncBlock(1, 1, async runner1 =>
+            {
+                long numberOfTimesFirstOperationWasRun = 0;
+
+                async Task Method1()
+                {
+                    await runner1.Run(async () =>
+                    {
+                        numberOfTimesFirstOperationWasRun++;
+
+                        if (numberOfTimesFirstOperationWasRun == 2)
+                            cts.Cancel();
+                    });
+                }
+
+                var tasks = Enumerable.Range(0, 10).Select(_ => Method1()).ToArray();
+
+                try
+                {
+                    await Task.WhenAll(tasks);
+                }
+                catch //WhenAll becomes faulted if any task is faulted. We expect two tasks to be faulted.
+                {
+
+                }
+
+                Assert.AreEqual(2, numberOfTimesFirstOperationWasRun);
+
+                Assert.IsTrue(tasks.Count(x => x.Status == TaskStatus.RanToCompletion) == 2);
+
+                Assert.IsTrue(tasks.Count(x => x.Status == TaskStatus.Canceled) == 8);
+
+            }, cts.Token);
+
+        }
+
+
+        public static async Task CreateAndUseNewBlock(
+            int numberOfThreads,
+            int maximumNumberOfActionsInQueue,
+            Func<IProcDataflowBlock, Task> action,
+            CancellationToken cancellationToken = default)
         {
             var runner = new ThreadPoolBasedActionRunner();
 
-            var node = new ProcDataflowBlock(runner, maximumNumberOfActionsInQueue, numberOfThreads);
+            var node = new ProcDataflowBlock(runner, maximumNumberOfActionsInQueue, numberOfThreads, cancellationToken);
 
             node.Start();
 
@@ -866,9 +954,16 @@ namespace ProceduralDataflow.Tests
             }
         }
 
-        public static async Task CreateAndUseNewAsyncBlock(int? maximumDegreeOfParallelism, int maximumNumberOfActionsInQueue, Func<IAsyncProcDataflowBlock, Task> action)
+        public static async Task CreateAndUseNewAsyncBlock(
+            int? maximumDegreeOfParallelism,
+            int maximumNumberOfActionsInQueue,
+            Func<IAsyncProcDataflowBlock, Task> action,
+            CancellationToken cancellationToken = default)
         {
-            var node = new AsyncProcDataflowBlock(maximumNumberOfActionsInQueue, maximumDegreeOfParallelism);
+            var node = new AsyncProcDataflowBlock(
+                maximumNumberOfActionsInQueue,
+                maximumDegreeOfParallelism,
+                cancellationToken);
 
             node.Start();
 

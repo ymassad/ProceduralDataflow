@@ -11,6 +11,7 @@ namespace ProceduralDataflow
     public class AsyncProcDataflowBlock : IAsyncProcDataflowBlock, IStartStopable
     {
         private readonly int? maximumDegreeOfParallelism;
+        private readonly CancellationToken cancellationToken;
 
         private readonly AsyncCollection<Func<Task>> collection;
 
@@ -20,9 +21,11 @@ namespace ProceduralDataflow
         
         public AsyncProcDataflowBlock(
             int maximumNumberOfActionsInQueue,
-            int? maximumDegreeOfParallelism)
+            int? maximumDegreeOfParallelism,
+            CancellationToken cancellationToken = default)
         {
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
+            this.cancellationToken = cancellationToken;
 
             collection = new AsyncCollection<Func<Task>>(new ConcurrentQueue<Func<Task>>(), maximumNumberOfActionsInQueue);
 
@@ -48,7 +51,14 @@ namespace ProceduralDataflow
 
                 try
                 {
-                    await action();
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        exception = new OperationCanceledException(cancellationToken);
+                    }
+                    else
+                    {
+                        await action();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -98,13 +108,20 @@ namespace ProceduralDataflow
 
             Func<Task> runAction = async() =>
             {
-                TResult result = default(TResult);
+                TResult result = default;
 
                 Exception exception = null;
 
                 try
                 {
-                    result = await function();
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        exception = new OperationCanceledException(cancellationToken);
+                    }
+                    else
+                    {
+                        result = await function();
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -166,7 +183,7 @@ namespace ProceduralDataflow
 
                     if (tasks.Count == maximumDegreeOfParallelism)
                     {
-                        var taskToRemove = await Task.WhenAny(tasks.ToArray());
+                        var taskToRemove = await Task.WhenAny(tasks);
 
                         tasks.Remove(taskToRemove);
                     }
