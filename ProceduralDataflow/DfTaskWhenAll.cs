@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 
 namespace ProceduralDataflow
 {
@@ -21,13 +20,13 @@ namespace ProceduralDataflow
 
             ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
 
-            TaskCompletionSource[] taskCompletionSources = new TaskCompletionSource[tasks.Length];
+            TaskCompletionSource<object>[] taskCompletionSources = new TaskCompletionSource<object>[tasks.Length];
 
             for (var index = 0; index < tasks.Length; index++)
             {
                 var task = tasks[index];
 
-                taskCompletionSources[index] = new TaskCompletionSource();
+                taskCompletionSources[index] = new TaskCompletionSource<object>();
 
                 int index1 = index;
 
@@ -75,7 +74,7 @@ namespace ProceduralDataflow
                                 if (i == index1)
                                     continue;
 
-                                taskCompletionSources[i].SetResult();
+                                taskCompletionSources[i].SetResult(null);
                             }
                         }
                     }
@@ -97,13 +96,13 @@ namespace ProceduralDataflow
 
             ConcurrentQueue<(int index, T value)> results = new ConcurrentQueue<(int index, T value)>();
 
-            TaskCompletionSource[] taskCompletionSources = new TaskCompletionSource[tasks.Length];
+            TaskCompletionSource<object>[] taskCompletionSources = new TaskCompletionSource<object>[tasks.Length];
 
             for (var index = 0; index < tasks.Length; index++)
             {
                 var task = tasks[index];
 
-                taskCompletionSources[index] = new TaskCompletionSource();
+                taskCompletionSources[index] = new TaskCompletionSource<object>();
 
                 int index1 = index;
 
@@ -151,7 +150,7 @@ namespace ProceduralDataflow
                                 if (i == index1)
                                     continue;
 
-                                taskCompletionSources[i].SetResult();
+                                taskCompletionSources[i].SetResult(null);
                             }
                         }
                     }

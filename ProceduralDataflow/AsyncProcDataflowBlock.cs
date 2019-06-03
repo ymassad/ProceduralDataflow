@@ -2,8 +2,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
-using Nito.AsyncEx;
 using ProceduralDataflow.Interfaces;
 
 namespace ProceduralDataflow
@@ -13,9 +13,9 @@ namespace ProceduralDataflow
         private readonly int? maximumDegreeOfParallelism;
         private readonly CancellationToken cancellationToken;
 
-        private readonly AsyncCollection<Func<Task>> collection;
+        private readonly Channel<Func<Task>> collection;
 
-        private readonly AsyncCollection<Func<Task>> collectionForReentrantItems;
+        private readonly Channel<Func<Task>> collectionForReentrantItems;
 
         private readonly Guid nodeId;
         
@@ -27,9 +27,9 @@ namespace ProceduralDataflow
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
             this.cancellationToken = cancellationToken;
 
-            collection = new AsyncCollection<Func<Task>>(new ConcurrentQueue<Func<Task>>(), maximumNumberOfActionsInQueue);
+            collection = Channel.CreateBounded<Func<Task>>(maximumNumberOfActionsInQueue);
 
-            collectionForReentrantItems = new AsyncCollection<Func<Task>>(new ConcurrentQueue<Func<Task>>());
+            collectionForReentrantItems = Channel.CreateUnbounded<Func<Task>>();
 
             nodeId = Guid.NewGuid();
         }
@@ -85,11 +85,11 @@ namespace ProceduralDataflow
 
             if (firstVisit)
             {
-                DfTask.AsyncBlockingTask = collection.AddAsync(actionToAddToCollection);
+                DfTask.AsyncBlockingTask = collection.Writer.WriteAsync(actionToAddToCollection).AsTask();
             }
             else
             {
-                DfTask.AsyncBlockingTask = collectionForReentrantItems.AddAsync(actionToAddToCollection);
+                DfTask.AsyncBlockingTask = collectionForReentrantItems.Writer.WriteAsync(actionToAddToCollection).AsTask();
             }
 
             return task;
@@ -148,11 +148,11 @@ namespace ProceduralDataflow
 
             if (firstVisit)
             {
-                DfTask.AsyncBlockingTask = collection.AddAsync(actionToAddToCollection);
+                DfTask.AsyncBlockingTask = collection.Writer.WriteAsync(actionToAddToCollection).AsTask();
             }
             else
             {
-                DfTask.AsyncBlockingTask = collectionForReentrantItems.AddAsync(actionToAddToCollection);
+                DfTask.AsyncBlockingTask = collectionForReentrantItems.Writer.WriteAsync(actionToAddToCollection).AsTask();
             }
 
             return task;
@@ -198,8 +198,8 @@ namespace ProceduralDataflow
 
         public void Stop()
         {
-            collection.CompleteAdding();
-            collectionForReentrantItems.CompleteAdding();
+            collection.Writer.TryComplete();
+            collectionForReentrantItems.Writer.TryComplete();
         }
 
         public static AsyncProcDataflowBlock StartDefault(

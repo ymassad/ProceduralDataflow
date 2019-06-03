@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProceduralDataflow", "ProceduralDataflow\ProceduralDataflow.csproj", "{497AAB3E-A60B-4A2F-B66E-08FD231A47DB}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProceduralDataflow.Tests", "ProceduralDataflow.Tests\ProceduralDataflow.Tests.csproj", "{D39A6A83-7A33-4671-BC6A-72BDCC8F5A8B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProceduralDataflow", "ProceduralDataflow\ProceduralDataflow.csproj", "{8FA91576-7773-4763-8945-7C0536C8B6ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +13,14 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{497AAB3E-A60B-4A2F-B66E-08FD231A47DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{497AAB3E-A60B-4A2F-B66E-08FD231A47DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{497AAB3E-A60B-4A2F-B66E-08FD231A47DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{497AAB3E-A60B-4A2F-B66E-08FD231A47DB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D39A6A83-7A33-4671-BC6A-72BDCC8F5A8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D39A6A83-7A33-4671-BC6A-72BDCC8F5A8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D39A6A83-7A33-4671-BC6A-72BDCC8F5A8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D39A6A83-7A33-4671-BC6A-72BDCC8F5A8B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FA91576-7773-4763-8945-7C0536C8B6ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FA91576-7773-4763-8945-7C0536C8B6ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FA91576-7773-4763-8945-7C0536C8B6ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FA91576-7773-4763-8945-7C0536C8B6ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

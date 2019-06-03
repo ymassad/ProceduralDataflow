@@ -3,7 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
-using Nito.AsyncEx;
+using System.Threading.Tasks;
 
 namespace ProceduralDataflow
 {
@@ -20,10 +20,10 @@ namespace ProceduralDataflow
 
 			T1 task1Result = default(T1);
 
-			TaskCompletionSource tcs1 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs1 = new TaskCompletionSource<object>();
 			T2 task2Result = default(T2);
 
-			TaskCompletionSource tcs2 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs2 = new TaskCompletionSource<object>();
 
             ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
 
@@ -59,7 +59,7 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs2.SetResult();
+                        tcs2.SetResult(null);
                     }
                 }
             });
@@ -95,7 +95,7 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
+                        tcs1.SetResult(null);
                     }
                 }
             });
@@ -111,13 +111,13 @@ namespace ProceduralDataflow
 
 			T1 task1Result = default(T1);
 
-			TaskCompletionSource tcs1 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs1 = new TaskCompletionSource<object>();
 			T2 task2Result = default(T2);
 
-			TaskCompletionSource tcs2 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs2 = new TaskCompletionSource<object>();
 			T3 task3Result = default(T3);
 
-			TaskCompletionSource tcs3 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs3 = new TaskCompletionSource<object>();
 
             ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
 
@@ -155,8 +155,8 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs2.SetResult();
-                        tcs3.SetResult();
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
                     }
                 }
             });
@@ -194,8 +194,8 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs3.SetResult();
+                        tcs1.SetResult(null);
+                        tcs3.SetResult(null);
                     }
                 }
             });
@@ -233,8 +233,8 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
                     }
                 }
             });
@@ -250,16 +250,16 @@ namespace ProceduralDataflow
 
 			T1 task1Result = default(T1);
 
-			TaskCompletionSource tcs1 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs1 = new TaskCompletionSource<object>();
 			T2 task2Result = default(T2);
 
-			TaskCompletionSource tcs2 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs2 = new TaskCompletionSource<object>();
 			T3 task3Result = default(T3);
 
-			TaskCompletionSource tcs3 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs3 = new TaskCompletionSource<object>();
 			T4 task4Result = default(T4);
 
-			TaskCompletionSource tcs4 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs4 = new TaskCompletionSource<object>();
 
             ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
 
@@ -299,9 +299,9 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
                     }
                 }
             });
@@ -341,9 +341,9 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
+                        tcs1.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
                     }
                 }
             });
@@ -383,9 +383,9 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs4.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs4.SetResult(null);
                     }
                 }
             });
@@ -425,9 +425,9 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
                     }
                 }
             });
@@ -443,19 +443,19 @@ namespace ProceduralDataflow
 
 			T1 task1Result = default(T1);
 
-			TaskCompletionSource tcs1 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs1 = new TaskCompletionSource<object>();
 			T2 task2Result = default(T2);
 
-			TaskCompletionSource tcs2 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs2 = new TaskCompletionSource<object>();
 			T3 task3Result = default(T3);
 
-			TaskCompletionSource tcs3 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs3 = new TaskCompletionSource<object>();
 			T4 task4Result = default(T4);
 
-			TaskCompletionSource tcs4 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs4 = new TaskCompletionSource<object>();
 			T5 task5Result = default(T5);
 
-			TaskCompletionSource tcs5 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs5 = new TaskCompletionSource<object>();
 
             ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
 
@@ -497,10 +497,10 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
                     }
                 }
             });
@@ -542,10 +542,10 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
+                        tcs1.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
                     }
                 }
             });
@@ -587,10 +587,10 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
                     }
                 }
             });
@@ -632,10 +632,10 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs5.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs5.SetResult(null);
                     }
                 }
             });
@@ -677,10 +677,10 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
                     }
                 }
             });
@@ -696,22 +696,22 @@ namespace ProceduralDataflow
 
 			T1 task1Result = default(T1);
 
-			TaskCompletionSource tcs1 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs1 = new TaskCompletionSource<object>();
 			T2 task2Result = default(T2);
 
-			TaskCompletionSource tcs2 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs2 = new TaskCompletionSource<object>();
 			T3 task3Result = default(T3);
 
-			TaskCompletionSource tcs3 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs3 = new TaskCompletionSource<object>();
 			T4 task4Result = default(T4);
 
-			TaskCompletionSource tcs4 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs4 = new TaskCompletionSource<object>();
 			T5 task5Result = default(T5);
 
-			TaskCompletionSource tcs5 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs5 = new TaskCompletionSource<object>();
 			T6 task6Result = default(T6);
 
-			TaskCompletionSource tcs6 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs6 = new TaskCompletionSource<object>();
 
             ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
 
@@ -755,11 +755,11 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
                     }
                 }
             });
@@ -803,11 +803,11 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
+                        tcs1.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
                     }
                 }
             });
@@ -851,11 +851,11 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
                     }
                 }
             });
@@ -899,11 +899,11 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
                     }
                 }
             });
@@ -947,11 +947,11 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs6.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs6.SetResult(null);
                     }
                 }
             });
@@ -995,11 +995,11 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
                     }
                 }
             });
@@ -1015,25 +1015,25 @@ namespace ProceduralDataflow
 
 			T1 task1Result = default(T1);
 
-			TaskCompletionSource tcs1 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs1 = new TaskCompletionSource<object>();
 			T2 task2Result = default(T2);
 
-			TaskCompletionSource tcs2 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs2 = new TaskCompletionSource<object>();
 			T3 task3Result = default(T3);
 
-			TaskCompletionSource tcs3 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs3 = new TaskCompletionSource<object>();
 			T4 task4Result = default(T4);
 
-			TaskCompletionSource tcs4 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs4 = new TaskCompletionSource<object>();
 			T5 task5Result = default(T5);
 
-			TaskCompletionSource tcs5 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs5 = new TaskCompletionSource<object>();
 			T6 task6Result = default(T6);
 
-			TaskCompletionSource tcs6 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs6 = new TaskCompletionSource<object>();
 			T7 task7Result = default(T7);
 
-			TaskCompletionSource tcs7 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs7 = new TaskCompletionSource<object>();
 
             ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
 
@@ -1079,12 +1079,12 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
                     }
                 }
             });
@@ -1130,12 +1130,12 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
+                        tcs1.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
                     }
                 }
             });
@@ -1181,12 +1181,12 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
                     }
                 }
             });
@@ -1232,12 +1232,12 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
                     }
                 }
             });
@@ -1283,12 +1283,12 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
                     }
                 }
             });
@@ -1334,12 +1334,12 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs7.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs7.SetResult(null);
                     }
                 }
             });
@@ -1385,12 +1385,12 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
                     }
                 }
             });
@@ -1406,28 +1406,28 @@ namespace ProceduralDataflow
 
 			T1 task1Result = default(T1);
 
-			TaskCompletionSource tcs1 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs1 = new TaskCompletionSource<object>();
 			T2 task2Result = default(T2);
 
-			TaskCompletionSource tcs2 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs2 = new TaskCompletionSource<object>();
 			T3 task3Result = default(T3);
 
-			TaskCompletionSource tcs3 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs3 = new TaskCompletionSource<object>();
 			T4 task4Result = default(T4);
 
-			TaskCompletionSource tcs4 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs4 = new TaskCompletionSource<object>();
 			T5 task5Result = default(T5);
 
-			TaskCompletionSource tcs5 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs5 = new TaskCompletionSource<object>();
 			T6 task6Result = default(T6);
 
-			TaskCompletionSource tcs6 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs6 = new TaskCompletionSource<object>();
 			T7 task7Result = default(T7);
 
-			TaskCompletionSource tcs7 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs7 = new TaskCompletionSource<object>();
 			T8 task8Result = default(T8);
 
-			TaskCompletionSource tcs8 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs8 = new TaskCompletionSource<object>();
 
             ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
 
@@ -1475,13 +1475,13 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
                     }
                 }
             });
@@ -1529,13 +1529,13 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
+                        tcs1.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
                     }
                 }
             });
@@ -1583,13 +1583,13 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
                     }
                 }
             });
@@ -1637,13 +1637,13 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
                     }
                 }
             });
@@ -1691,13 +1691,13 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
                     }
                 }
             });
@@ -1745,13 +1745,13 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
                     }
                 }
             });
@@ -1799,13 +1799,13 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs8.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs8.SetResult(null);
                     }
                 }
             });
@@ -1853,13 +1853,13 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
                     }
                 }
             });
@@ -1875,31 +1875,31 @@ namespace ProceduralDataflow
 
 			T1 task1Result = default(T1);
 
-			TaskCompletionSource tcs1 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs1 = new TaskCompletionSource<object>();
 			T2 task2Result = default(T2);
 
-			TaskCompletionSource tcs2 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs2 = new TaskCompletionSource<object>();
 			T3 task3Result = default(T3);
 
-			TaskCompletionSource tcs3 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs3 = new TaskCompletionSource<object>();
 			T4 task4Result = default(T4);
 
-			TaskCompletionSource tcs4 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs4 = new TaskCompletionSource<object>();
 			T5 task5Result = default(T5);
 
-			TaskCompletionSource tcs5 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs5 = new TaskCompletionSource<object>();
 			T6 task6Result = default(T6);
 
-			TaskCompletionSource tcs6 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs6 = new TaskCompletionSource<object>();
 			T7 task7Result = default(T7);
 
-			TaskCompletionSource tcs7 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs7 = new TaskCompletionSource<object>();
 			T8 task8Result = default(T8);
 
-			TaskCompletionSource tcs8 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs8 = new TaskCompletionSource<object>();
 			T9 task9Result = default(T9);
 
-			TaskCompletionSource tcs9 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs9 = new TaskCompletionSource<object>();
 
             ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
 
@@ -1949,14 +1949,14 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
                     }
                 }
             });
@@ -2006,14 +2006,14 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
+                        tcs1.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
                     }
                 }
             });
@@ -2063,14 +2063,14 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
                     }
                 }
             });
@@ -2120,14 +2120,14 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
                     }
                 }
             });
@@ -2177,14 +2177,14 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
                     }
                 }
             });
@@ -2234,14 +2234,14 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
                     }
                 }
             });
@@ -2291,14 +2291,14 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
                     }
                 }
             });
@@ -2348,14 +2348,14 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs9.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs9.SetResult(null);
                     }
                 }
             });
@@ -2405,14 +2405,14 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
                     }
                 }
             });
@@ -2428,34 +2428,34 @@ namespace ProceduralDataflow
 
 			T1 task1Result = default(T1);
 
-			TaskCompletionSource tcs1 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs1 = new TaskCompletionSource<object>();
 			T2 task2Result = default(T2);
 
-			TaskCompletionSource tcs2 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs2 = new TaskCompletionSource<object>();
 			T3 task3Result = default(T3);
 
-			TaskCompletionSource tcs3 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs3 = new TaskCompletionSource<object>();
 			T4 task4Result = default(T4);
 
-			TaskCompletionSource tcs4 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs4 = new TaskCompletionSource<object>();
 			T5 task5Result = default(T5);
 
-			TaskCompletionSource tcs5 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs5 = new TaskCompletionSource<object>();
 			T6 task6Result = default(T6);
 
-			TaskCompletionSource tcs6 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs6 = new TaskCompletionSource<object>();
 			T7 task7Result = default(T7);
 
-			TaskCompletionSource tcs7 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs7 = new TaskCompletionSource<object>();
 			T8 task8Result = default(T8);
 
-			TaskCompletionSource tcs8 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs8 = new TaskCompletionSource<object>();
 			T9 task9Result = default(T9);
 
-			TaskCompletionSource tcs9 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs9 = new TaskCompletionSource<object>();
 			T10 task10Result = default(T10);
 
-			TaskCompletionSource tcs10 = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs10 = new TaskCompletionSource<object>();
 
             ConcurrentQueue<Exception> errors = new ConcurrentQueue<Exception>();
 
@@ -2507,15 +2507,15 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
-                        tcs10.SetResult();
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
+                        tcs10.SetResult(null);
                     }
                 }
             });
@@ -2567,15 +2567,15 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
-                        tcs10.SetResult();
+                        tcs1.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
+                        tcs10.SetResult(null);
                     }
                 }
             });
@@ -2627,15 +2627,15 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
-                        tcs10.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
+                        tcs10.SetResult(null);
                     }
                 }
             });
@@ -2687,15 +2687,15 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
-                        tcs10.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
+                        tcs10.SetResult(null);
                     }
                 }
             });
@@ -2747,15 +2747,15 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
-                        tcs10.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
+                        tcs10.SetResult(null);
                     }
                 }
             });
@@ -2807,15 +2807,15 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
-                        tcs10.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
+                        tcs10.SetResult(null);
                     }
                 }
             });
@@ -2867,15 +2867,15 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
-                        tcs10.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
+                        tcs10.SetResult(null);
                     }
                 }
             });
@@ -2927,15 +2927,15 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs9.SetResult();
-                        tcs10.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs9.SetResult(null);
+                        tcs10.SetResult(null);
                     }
                 }
             });
@@ -2987,15 +2987,15 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs10.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs10.SetResult(null);
                     }
                 }
             });
@@ -3047,15 +3047,15 @@ namespace ProceduralDataflow
                     }
                     else
                     {
-                        tcs1.SetResult();
-                        tcs2.SetResult();
-                        tcs3.SetResult();
-                        tcs4.SetResult();
-                        tcs5.SetResult();
-                        tcs6.SetResult();
-                        tcs7.SetResult();
-                        tcs8.SetResult();
-                        tcs9.SetResult();
+                        tcs1.SetResult(null);
+                        tcs2.SetResult(null);
+                        tcs3.SetResult(null);
+                        tcs4.SetResult(null);
+                        tcs5.SetResult(null);
+                        tcs6.SetResult(null);
+                        tcs7.SetResult(null);
+                        tcs8.SetResult(null);
+                        tcs9.SetResult(null);
                     }
                 }
             });

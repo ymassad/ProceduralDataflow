@@ -9,7 +9,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
-using Nito.AsyncEx;
+using System.Threading.Tasks;
 
 namespace ProceduralDataflow
 {
@@ -40,7 +40,7 @@ namespace ProceduralDataflow
 #>
 			T<#=i#> task<#=i#>Result = default(T<#=i#>);
 
-			TaskCompletionSource tcs<#=i#> = new TaskCompletionSource();
+			TaskCompletionSource<object> tcs<#=i#> = new TaskCompletionSource<object>();
 <#
 			}
 #>
@@ -98,7 +98,7 @@ namespace ProceduralDataflow
 							if(i == j)
 								continue;
 #>
-                        tcs<#=j#>.SetResult();
+                        tcs<#=j#>.SetResult(null);
 <#
 						}
 #>
