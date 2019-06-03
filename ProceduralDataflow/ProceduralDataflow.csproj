@@ -4,7 +4,8 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>7.3</LangVersion>
     <Version>0.9.3.0</Version>
-    <Copyright>Copyright © Yacoub Massad 2017</Copyright>
+    <Copyright>Copyright © Yacoub Massad 2019</Copyright>
+    <PackageLicenseUrl>https://github.com/ymassad/ProceduralDataflow/blob/master/LICENSE</PackageLicenseUrl>
   </PropertyGroup>
 
   <ItemGroup>
