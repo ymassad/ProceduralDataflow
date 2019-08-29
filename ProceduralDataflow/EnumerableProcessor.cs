@@ -15,30 +15,37 @@ namespace ProceduralDataflow
         {
             List<Task> tasks = new List<Task>();
 
-            foreach (var dataItem in enumerable)
+            try
             {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var task = action(dataItem);
-
-                tasks.Add(task);
-
-                if (tasks.Count == maximumNumberOfNotCompletedTasks)
+                foreach (var dataItem in enumerable)
                 {
-                    var removedTask = await Task.WhenAny(tasks);
+                    cancellationToken.ThrowIfCancellationRequested();
 
-                    tasks.Remove(removedTask);
+                    var task = action(dataItem);
+
+                    tasks.Add(task);
+
+                    if (tasks.Count == maximumNumberOfNotCompletedTasks)
+                    {
+                        var removedTask = await Task.WhenAny(tasks);
+
+                        tasks.Remove(removedTask);
+                    }
+                }
+            }
+            finally
+            {
+                while (tasks.Count > 0)
+                {
+                    await tasks[tasks.Count - 1];
+
+                    tasks.RemoveAt(tasks.Count - 1);
                 }
             }
 
-            while (tasks.Count > 0)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
 
-                await tasks[tasks.Count - 1];
 
-                tasks.RemoveAt(tasks.Count - 1);
-            }
+
         }
 
         public static async Task<TResult> ProcessEnumerable<TInput,TOutput,TResult>(
