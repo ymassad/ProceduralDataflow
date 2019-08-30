@@ -1,20 +1,24 @@
 <?xml version="1.0"?>
 <package >
-  <metadata>
-    <id>YMassad.ProceduralDataflow</id>
-    <version>0.9.4-alpha</version>
-    <title>Procedural Dataflow</title>
-    <authors>Yacoub Massad</authors>
-    <owners>Yacoub Massad</owners>
-    <projectUrl>https://github.com/ymassad/ProceduralDataflow</projectUrl>
-    <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>A library to create dataflows in a procedural way</description>
-    <releaseNotes>Fifth prerelease</releaseNotes>
-    <copyright>Copyright 2019</copyright>
-    <tags></tags>
-    <dependencies>
-        <dependency id="System.Collections.Immutable" version="1.5.0.0" />
-        <dependency id="System.Threading.Channels" version="4.5.0.0" />
-    </dependencies>
-  </metadata>
+    <metadata>
+        <id>YMassad.ProceduralDataflow</id>
+        <version>0.9.4-alpha</version>
+        <title>Procedural Dataflow</title>
+        <authors>Yacoub Massad</authors>
+        <owners>Yacoub Massad</owners>
+        <projectUrl>https://github.com/ymassad/ProceduralDataflow</projectUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>        
+        <description>A library to create dataflows in a procedural way</description>
+        <releaseNotes>Fifth prerelease</releaseNotes>
+        <copyright>Copyright 2019</copyright>
+        <tags></tags>
+        <license type="file">LICENSE.txt</license>
+        <dependencies>
+            <dependency id="System.Collections.Immutable" version="1.5.0.0" />
+            <dependency id="System.Threading.Channels" version="4.5.0.0" />
+        </dependencies>
+    </metadata>
+    <files>
+        <file src="..\LICENSE.txt" target="LICENSE.txt" />
+    </files>      
 </package>
