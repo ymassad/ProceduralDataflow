@@ -12,5 +12,8 @@
     <releaseNotes>Third prerelease</releaseNotes>
     <copyright>Copyright 2019</copyright>
     <tags></tags>
+    <dependencies>
+        <dependency id="System.Collections.Immutable" version="1.5.0.0" />
+    </dependencies>
   </metadata>
 </package>
