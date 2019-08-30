@@ -30,9 +30,13 @@ namespace ProceduralDataflow.Tests
                 processedData.Enqueue(data);
             }
 
-            await EnumerableProcessor.ProcessEnumerable(GetData(), GetTask, 5);
+            var result = await EnumerableProcessor.ProcessEnumerable(GetData(), GetTask, 5);
 
             processedData.Should().ContainInOrder(new[] {1, 2});
+
+            result.CancelledTasks.Should().BeEmpty();
+
+            result.FaultedTasks.Should().BeEmpty();
         }
 
         [TestMethod]
@@ -74,6 +78,17 @@ namespace ProceduralDataflow.Tests
             Thread.Sleep(500);
 
             task.IsCompleted.Should().BeFalse();
+
+            taskCompletionSources[2].SetResult(null);
+            taskCompletionSources[3].SetResult(null);
+            taskCompletionSources[4].SetResult(null);
+            taskCompletionSources[5].SetResult(null);
+
+            var result = await task;
+
+            result.CancelledTasks.Should().BeEmpty();
+
+            result.FaultedTasks.Should().BeEmpty();
         }
 
         [TestMethod]
@@ -168,6 +183,252 @@ namespace ProceduralDataflow.Tests
                 .Where(x => x.InnerExceptions[0] is OperationCanceledException);
         }
 
+        [TestMethod]
+        public async Task Test_Task1And2CompleteTask3Fails_ShouldWaitForTask4And5()
+        {
+
+            IEnumerable<int> GetData()
+            {
+                yield return 1;
+                yield return 2;
+                yield return 3;
+                yield return 4;
+                yield return 5;
+            }
+
+            var taskCompletionSources = new Dictionary<int, TaskCompletionSource<object>>();
+
+
+            Task GetTask(int data)
+            {
+                var tcs = new TaskCompletionSource<object>();
+
+                taskCompletionSources.Add(data, tcs);
+
+                if(data == 1 || data == 2)
+                    tcs.SetResult(null);
+
+                if (data == 3)
+                    tcs.SetException(new MyCustomException("My exception"));
+
+                return tcs.Task;
+            }
+
+            var task = EnumerableProcessor.ProcessEnumerable(GetData(), GetTask, 10);
+
+            Thread.Sleep(500);
+
+            taskCompletionSources.Count.Should().Be(5);
+
+            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3, 4, 5 });
+
+            task.IsCanceled.Should().BeFalse();
+            task.IsCompleted.Should().BeFalse();
+            task.IsFaulted.Should().BeFalse();
+
+            taskCompletionSources[4].SetResult(null);
+            taskCompletionSources[5].SetResult(null);
+
+            var result = await task;
+
+            result.CancelledTasks.Should().BeEmpty();
+            result.FaultedTasks.Length.Should().Be(1);
+
+            result.FaultedTasks[0].IsFaulted.Should().BeTrue();
+
+            result.FaultedTasks[0].Exception.InnerExceptions.Count.Should().Be(1);
+            result.FaultedTasks[0].Exception.InnerExceptions[0].Should().BeOfType<MyCustomException>()
+                .Which.Message.Should().Be("My exception");
+
+
+        }
+
+        [TestMethod]
+        public async Task Test_Task4And5CompleteTask3Fails_ShouldWaitForTask1And2()
+        {
+
+            IEnumerable<int> GetData()
+            {
+                yield return 1;
+                yield return 2;
+                yield return 3;
+                yield return 4;
+                yield return 5;
+            }
+
+            var taskCompletionSources = new Dictionary<int, TaskCompletionSource<object>>();
+
+
+            Task GetTask(int data)
+            {
+                var tcs = new TaskCompletionSource<object>();
+
+                taskCompletionSources.Add(data, tcs);
+
+                if (data == 4 || data == 5)
+                    tcs.SetResult(null);
+
+                if (data == 3)
+                    tcs.SetException(new MyCustomException("My exception"));
+
+                return tcs.Task;
+            }
+
+            var task = EnumerableProcessor.ProcessEnumerable(GetData(), GetTask, 10);
+
+            Thread.Sleep(500);
+
+            taskCompletionSources.Count.Should().Be(5);
+
+            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3, 4, 5 });
+
+            task.IsCanceled.Should().BeFalse();
+            task.IsCompleted.Should().BeFalse();
+            task.IsFaulted.Should().BeFalse();
+
+            taskCompletionSources[1].SetResult(null);
+            taskCompletionSources[2].SetResult(null);
+
+            var result = await task;
+
+            result.CancelledTasks.Should().BeEmpty();
+            result.FaultedTasks.Length.Should().Be(1);
+
+            result.FaultedTasks[0].IsFaulted.Should().BeTrue();
+
+            result.FaultedTasks[0].Exception.InnerExceptions.Count.Should().Be(1);
+            result.FaultedTasks[0].Exception.InnerExceptions[0].Should().BeOfType<MyCustomException>()
+                .Which.Message.Should().Be("My exception");
+
+        }
+
+        [TestMethod]
+        public async Task Test_Task5CompletesTask3And4Fail_ShouldWaitForTask1And2_AndResultShouldContainTwoFaultedTasks()
+        {
+
+            IEnumerable<int> GetData()
+            {
+                yield return 1;
+                yield return 2;
+                yield return 3;
+                yield return 4;
+                yield return 5;
+            }
+
+            var taskCompletionSources = new Dictionary<int, TaskCompletionSource<object>>();
+
+            Task GetTask(int data)
+            {
+                var tcs = new TaskCompletionSource<object>();
+
+                taskCompletionSources.Add(data, tcs);
+
+                if (data == 5)
+                    tcs.SetResult(null);
+
+                if (data == 3 || data == 4)
+                    tcs.SetException(new MyCustomException("My exception " + data));
+
+                return tcs.Task;
+            }
+
+            var task = EnumerableProcessor.ProcessEnumerable(GetData(), GetTask, 10);
+
+            Thread.Sleep(500);
+
+            taskCompletionSources.Count.Should().Be(5);
+
+            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3, 4, 5 });
+
+            task.IsCanceled.Should().BeFalse();
+            task.IsCompleted.Should().BeFalse();
+            task.IsFaulted.Should().BeFalse();
+
+            taskCompletionSources[1].SetResult(null);
+            taskCompletionSources[2].SetResult(null);
+
+            var result = await task;
+
+            result.CancelledTasks.Should().BeEmpty();
+            result.FaultedTasks.Length.Should().Be(2);
+
+            result.FaultedTasks.All(x => x.IsFaulted).Should().BeTrue();
+
+            result.FaultedTasks.All(x => x.Exception.InnerExceptions.Count == 1).Should().BeTrue();
+
+            result.FaultedTasks.All(x => x.Exception.InnerExceptions[0] is MyCustomException).Should().BeTrue();
+
+            result.FaultedTasks.Any(x => x.Exception.InnerExceptions[0].Message == "My exception 3").Should().BeTrue();
+            result.FaultedTasks.Any(x => x.Exception.InnerExceptions[0].Message == "My exception 4").Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task Test_Task1And2CompleteTask3And4Fail_ShouldWaitForTask5_AndResultShouldContainTwoFaultedTasks()
+        {
+
+            IEnumerable<int> GetData()
+            {
+                yield return 1;
+                yield return 2;
+                yield return 3;
+                yield return 4;
+                yield return 5;
+            }
+
+            var taskCompletionSources = new Dictionary<int, TaskCompletionSource<object>>();
+
+            Task GetTask(int data)
+            {
+                var tcs = new TaskCompletionSource<object>();
+
+                taskCompletionSources.Add(data, tcs);
+
+                if (data == 1 || data == 2)
+                    tcs.SetResult(null);
+
+                if (data == 3 || data == 4)
+                    tcs.SetException(new MyCustomException("My exception " + data));
+
+                return tcs.Task;
+            }
+
+            var task = EnumerableProcessor.ProcessEnumerable(GetData(), GetTask, 10);
+
+            Thread.Sleep(500);
+
+            taskCompletionSources.Count.Should().Be(5);
+
+            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3, 4, 5 });
+
+            task.IsCanceled.Should().BeFalse();
+            task.IsCompleted.Should().BeFalse();
+            task.IsFaulted.Should().BeFalse();
+
+            taskCompletionSources[5].SetResult(null);
+
+            var result = await task;
+
+            result.CancelledTasks.Should().BeEmpty();
+            result.FaultedTasks.Length.Should().Be(2);
+
+            result.FaultedTasks.All(x => x.IsFaulted).Should().BeTrue();
+
+            result.FaultedTasks.All(x => x.Exception.InnerExceptions.Count == 1).Should().BeTrue();
+
+            result.FaultedTasks.All(x => x.Exception.InnerExceptions[0] is MyCustomException).Should().BeTrue();
+
+            result.FaultedTasks.Any(x => x.Exception.InnerExceptions[0].Message == "My exception 3").Should().BeTrue();
+            result.FaultedTasks.Any(x => x.Exception.InnerExceptions[0].Message == "My exception 4").Should().BeTrue();
+        }
+
+
+        public class MyCustomException : Exception
+        {
+            public MyCustomException(string message):base(message)
+            {
+                
+            }
+        }
 
         void WaitUntil(Func<bool> func, TimeSpan timeout)
         {
