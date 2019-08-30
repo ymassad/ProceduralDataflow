@@ -32,7 +32,8 @@ namespace ProceduralDataflow.Tests
 
             var result = await EnumerableProcessor.ProcessEnumerable(GetData(), GetTask, 5);
 
-            processedData.Should().ContainInOrder(new[] {1, 2});
+            processedData
+                .SequenceEqual(new[] { 1, 2 }).Should().BeTrue();
 
             result.CancelledTasks.Should().BeEmpty();
 
@@ -122,7 +123,7 @@ namespace ProceduralDataflow.Tests
 
             Thread.Sleep(500);
 
-            processedData.Should().ContainInOrder(new[] {1, 2, 3});
+            processedData.SequenceEqual(new[] {1, 2, 3}).Should().BeTrue();
 
             task.IsCanceled.Should().BeTrue();
 
@@ -167,7 +168,7 @@ namespace ProceduralDataflow.Tests
 
             Thread.Sleep(500);
 
-            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3 });
+            taskCompletionSources.Keys.Should().BeEquivalentTo(new[] { 1, 2, 3 });
 
             task.IsCanceled.Should().BeFalse();
             task.IsCompleted.Should().BeFalse();
@@ -220,7 +221,7 @@ namespace ProceduralDataflow.Tests
 
             taskCompletionSources.Count.Should().Be(5);
 
-            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3, 4, 5 });
+            taskCompletionSources.Keys.Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5 });
 
             task.IsCanceled.Should().BeFalse();
             task.IsCompleted.Should().BeFalse();
@@ -281,7 +282,7 @@ namespace ProceduralDataflow.Tests
 
             taskCompletionSources.Count.Should().Be(5);
 
-            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3, 4, 5 });
+            taskCompletionSources.Keys.Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5 });
 
             task.IsCanceled.Should().BeFalse();
             task.IsCompleted.Should().BeFalse();
@@ -339,7 +340,7 @@ namespace ProceduralDataflow.Tests
 
             taskCompletionSources.Count.Should().Be(5);
 
-            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3, 4, 5 });
+            taskCompletionSources.Keys.Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5 });
 
             task.IsCanceled.Should().BeFalse();
             task.IsCompleted.Should().BeFalse();
@@ -399,7 +400,7 @@ namespace ProceduralDataflow.Tests
 
             taskCompletionSources.Count.Should().Be(5);
 
-            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3, 4, 5 });
+            taskCompletionSources.Keys.Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5 });
 
             task.IsCanceled.Should().BeFalse();
             task.IsCompleted.Should().BeFalse();
@@ -459,7 +460,7 @@ namespace ProceduralDataflow.Tests
 
             taskCompletionSources.Count.Should().Be(5);
 
-            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3, 4, 5 });
+            taskCompletionSources.Keys.Should().BeEquivalentTo(new[] { 1, 2, 3, 4, 5 });
 
             task.IsCanceled.Should().BeFalse();
             task.IsCompleted.Should().BeFalse();
@@ -507,7 +508,7 @@ namespace ProceduralDataflow.Tests
 
             taskCompletionSources.Count.Should().Be(1);
 
-            taskCompletionSources.Keys.Should().Contain(new[] { 1});
+            taskCompletionSources.Keys.Should().BeEquivalentTo(new[] { 1});
 
             task.IsCanceled.Should().BeFalse();
             task.IsCompleted.Should().BeFalse();
@@ -570,7 +571,7 @@ namespace ProceduralDataflow.Tests
 
             taskCompletionSources.Count.Should().Be(1);
 
-            taskCompletionSources.Keys.Should().Contain(new[] { 1 });
+            taskCompletionSources.Keys.Should().BeEquivalentTo(new[] { 1 });
 
             task.IsCanceled.Should().BeFalse();
             task.IsCompleted.Should().BeFalse();
