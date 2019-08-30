@@ -7,21 +7,6 @@ using System.Threading.Tasks;
 
 namespace ProceduralDataflow
 {
-
-    public sealed class ProcessEnumerableResult
-    {
-        public ImmutableArray<Task> CancelledTasks { get; }
-
-        public ImmutableArray<Task> FaultedTasks { get; }
-
-        public ProcessEnumerableResult(ImmutableArray<Task> cancelledTasks, ImmutableArray<Task> faultedTasks)
-        {
-            CancelledTasks = cancelledTasks;
-            FaultedTasks = faultedTasks;
-        }
-    }
-
-
     public static class EnumerableProcessor
     {
         public static async Task<ProcessEnumerableResult> ProcessEnumerable<TInput>(
@@ -30,8 +15,7 @@ namespace ProceduralDataflow
             int maximumNumberOfNotCompletedTasks,
             CancellationToken cancellationToken = default)
         {
-            List<Task> tasks = new List<Task>();
-            
+            var tasks = new List<Task>();
 
             var cancelledTasks = new List<Task>();
 
@@ -46,8 +30,6 @@ namespace ProceduralDataflow
                     var task = action(dataItem);
 
                     tasks.Add(task);
- 
-
 
                     if (tasks.Count == maximumNumberOfNotCompletedTasks)
                     {
@@ -66,13 +48,12 @@ namespace ProceduralDataflow
                     {
                         await task;
                     }
-                    catch (Exception e)
+                    catch
                     {
                         
                     }
 
-    
-                    if(task.IsCanceled)
+                    if (task.IsCanceled)
                         cancelledTasks.Add(task);
                     else if (task.IsFaulted)
                         faultedTasks.Add(task);
@@ -82,8 +63,6 @@ namespace ProceduralDataflow
             }
 
             return new ProcessEnumerableResult(cancelledTasks.ToImmutableArray(), faultedTasks.ToImmutableArray());
-
-
         }
 
         public static async Task<TResult> ProcessEnumerable<TInput,TOutput,TResult>(

@@ -243,6 +243,7 @@ namespace ProceduralDataflow.Tests
 
         }
 
+
         [TestMethod]
         public async Task Test_Task4And5CompleteTask3Fails_ShouldWaitForTask1And2()
         {
@@ -419,6 +420,60 @@ namespace ProceduralDataflow.Tests
 
             result.FaultedTasks.Any(x => x.Exception.InnerExceptions[0].Message == "My exception 3").Should().BeTrue();
             result.FaultedTasks.Any(x => x.Exception.InnerExceptions[0].Message == "My exception 4").Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task Test_Task1And2CompleteTask3IsCancelled_ShouldWaitForTask4And5()
+        {
+
+            IEnumerable<int> GetData()
+            {
+                yield return 1;
+                yield return 2;
+                yield return 3;
+                yield return 4;
+                yield return 5;
+            }
+
+            var taskCompletionSources = new Dictionary<int, TaskCompletionSource<object>>();
+
+
+            Task GetTask(int data)
+            {
+                var tcs = new TaskCompletionSource<object>();
+
+                taskCompletionSources.Add(data, tcs);
+
+                if (data == 1 || data == 2)
+                    tcs.SetResult(null);
+
+                if (data == 3)
+                    tcs.SetCanceled();
+
+                return tcs.Task;
+            }
+
+            var task = EnumerableProcessor.ProcessEnumerable(GetData(), GetTask, 10);
+
+            Thread.Sleep(500);
+
+            taskCompletionSources.Count.Should().Be(5);
+
+            taskCompletionSources.Keys.Should().Contain(new[] { 1, 2, 3, 4, 5 });
+
+            task.IsCanceled.Should().BeFalse();
+            task.IsCompleted.Should().BeFalse();
+            task.IsFaulted.Should().BeFalse();
+
+            taskCompletionSources[4].SetResult(null);
+            taskCompletionSources[5].SetResult(null);
+
+            var result = await task;
+
+            result.FaultedTasks.Should().BeEmpty();
+            result.CancelledTasks.Length.Should().Be(1);
+
+            result.CancelledTasks[0].IsCanceled.Should().BeTrue();
         }
 
 
