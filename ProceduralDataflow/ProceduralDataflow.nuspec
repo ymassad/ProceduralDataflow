@@ -9,7 +9,7 @@
     <projectUrl>https://github.com/ymassad/ProceduralDataflow</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A library to create dataflows in a procedural way</description>
-    <releaseNotes>Third prerelease</releaseNotes>
+    <releaseNotes>Fifth prerelease</releaseNotes>
     <copyright>Copyright 2019</copyright>
     <tags></tags>
     <dependencies>
