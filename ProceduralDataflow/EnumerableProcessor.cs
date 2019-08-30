@@ -15,11 +15,34 @@ namespace ProceduralDataflow
             int maximumNumberOfNotCompletedTasks,
             CancellationToken cancellationToken = default)
         {
+            var result = await ProcessEnumerable_Internal(
+                enumerable,
+                action,
+                (object) null,
+                (x, _) => null,
+                _ => (object) null,
+                maximumNumberOfNotCompletedTasks,
+                cancellationToken);
+
+            return new ProcessEnumerableResult(result.CancelledTasks, result.FaultedTasks);
+        }
+
+        private static async Task<ProcessEnumerableResult<TResult>> ProcessEnumerable_Internal<TInput, TOutput, TResult>(
+            IEnumerable<TInput> enumerable,
+            Func<TInput, Task> action,
+            TResult seed,
+            Func<TResult, TOutput, TResult> accumulator,
+            Func<Task, TOutput> getOutput,
+            int maximumNumberOfNotCompletedTasks,
+            CancellationToken cancellationToken = default)
+        {
             var tasks = new List<Task>();
 
             var cancelledTasks = new List<Task>();
 
             var faultedTasks = new List<Task>();
+
+            TResult result = seed;
 
             try
             {
@@ -39,7 +62,10 @@ namespace ProceduralDataflow
                             cancelledTasks.Add(removedTask);
                         else if (removedTask.IsFaulted)
                             faultedTasks.Add(removedTask);
-
+                        else
+                        {
+                            result = accumulator(result, getOutput(removedTask));
+                        }
                         tasks.Remove(removedTask);
                     }
                 }
@@ -62,15 +88,19 @@ namespace ProceduralDataflow
                         cancelledTasks.Add(task);
                     else if (task.IsFaulted)
                         faultedTasks.Add(task);
+                    else
+                    {
+                        result = accumulator(result, getOutput(task));
+                    }
 
                     tasks.RemoveAt(tasks.Count - 1);
                 }
             }
 
-            return new ProcessEnumerableResult(cancelledTasks.ToImmutableArray(), faultedTasks.ToImmutableArray());
+            return new ProcessEnumerableResult<TResult>(result, cancelledTasks.ToImmutableArray(), faultedTasks.ToImmutableArray());
         }
 
-        public static async Task<ProcessEnumerableResult<TResult>> ProcessEnumerable<TInput,TOutput,TResult>(
+        public static Task<ProcessEnumerableResult<TResult>> ProcessEnumerable<TInput,TOutput,TResult>(
             IEnumerable<TInput> enumerable,
             Func<TInput, Task<TOutput>> action,
             TResult seed,
@@ -78,40 +108,7 @@ namespace ProceduralDataflow
             int maximumNumberOfNotCompletedTasks,
             CancellationToken cancellationToken = default)
         {
-            List<Task<TOutput>> tasks = new List<Task<TOutput>>();
-
-            TResult result = seed;
-
-            foreach (var dataItem in enumerable)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var task = action(dataItem);
-
-                tasks.Add(task);
-
-                if (tasks.Count == maximumNumberOfNotCompletedTasks)
-                {
-                    var removedTask = await Task.WhenAny(tasks);
-
-                    tasks.Remove(removedTask);
-
-                    result = accumulator(result, removedTask.Result);
-                }
-            }
-
-            while (tasks.Count > 0)
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                var output = await tasks[tasks.Count - 1];
-
-                result = accumulator(result, output);
-
-                tasks.RemoveAt(tasks.Count - 1);
-            }
-
-            return new ProcessEnumerableResult<TResult>(result, ImmutableArray<Task>.Empty, ImmutableArray<Task>.Empty);
+            return ProcessEnumerable_Internal(enumerable, action, seed, accumulator, x => ((Task<TOutput>) x).Result, maximumNumberOfNotCompletedTasks, cancellationToken);
         }
     }
 }
