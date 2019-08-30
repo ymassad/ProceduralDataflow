@@ -74,6 +74,7 @@
   <ItemGroup>
     <Compile Include="PossibleValuesComparer.cs" />
     <Compile Include="ProcessEnumerableTests.cs" />
+    <Compile Include="ProcessEnumerableTests_OverloadWithOutput.cs" />
     <Compile Include="Tests.cs" />
     <Compile Include="PossibleValues.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

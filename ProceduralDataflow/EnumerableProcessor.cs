@@ -70,7 +70,7 @@ namespace ProceduralDataflow
             return new ProcessEnumerableResult(cancelledTasks.ToImmutableArray(), faultedTasks.ToImmutableArray());
         }
 
-        public static async Task<TResult> ProcessEnumerable<TInput,TOutput,TResult>(
+        public static async Task<ProcessEnumerableResult<TResult>> ProcessEnumerable<TInput,TOutput,TResult>(
             IEnumerable<TInput> enumerable,
             Func<TInput, Task<TOutput>> action,
             TResult seed,
@@ -111,7 +111,7 @@ namespace ProceduralDataflow
                 tasks.RemoveAt(tasks.Count - 1);
             }
 
-            return result;
+            return new ProcessEnumerableResult<TResult>(result, ImmutableArray<Task>.Empty, ImmutableArray<Task>.Empty);
         }
     }
 }

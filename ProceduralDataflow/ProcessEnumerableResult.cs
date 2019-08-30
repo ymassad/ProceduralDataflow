@@ -15,4 +15,20 @@ namespace ProceduralDataflow
             FaultedTasks = faultedTasks;
         }
     }
+
+    public sealed class ProcessEnumerableResult<TResult>
+    {
+        public TResult Result { get; }
+
+        public ImmutableArray<Task> CancelledTasks { get; }
+
+        public ImmutableArray<Task> FaultedTasks { get; }
+
+        public ProcessEnumerableResult(TResult result, ImmutableArray<Task> cancelledTasks, ImmutableArray<Task> faultedTasks)
+        {
+            Result = result;
+            CancelledTasks = cancelledTasks;
+            FaultedTasks = faultedTasks;
+        }
+    }
 }
