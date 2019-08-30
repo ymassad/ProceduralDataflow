@@ -35,6 +35,11 @@ namespace ProceduralDataflow
                     {
                         var removedTask = await Task.WhenAny(tasks);
 
+                        if (removedTask.IsCanceled)
+                            cancelledTasks.Add(removedTask);
+                        else if (removedTask.IsFaulted)
+                            faultedTasks.Add(removedTask);
+
                         tasks.Remove(removedTask);
                     }
                 }

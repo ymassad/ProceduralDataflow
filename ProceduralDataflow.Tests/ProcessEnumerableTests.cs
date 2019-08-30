@@ -476,6 +476,128 @@ namespace ProceduralDataflow.Tests
             result.CancelledTasks[0].IsCanceled.Should().BeTrue();
         }
 
+        [TestMethod]
+        public async Task Test_MaximumNumberOfNotCompletedTasksIs1_Task3FailsLater_ResultContainsTheFaultedTask3()
+        {
+
+            IEnumerable<int> GetData()
+            {
+                yield return 1;
+                yield return 2;
+                yield return 3;
+                yield return 4;
+                yield return 5;
+            }
+
+            var taskCompletionSources = new Dictionary<int, TaskCompletionSource<object>>();
+
+
+            Task GetTask(int data)
+            {
+                var tcs = new TaskCompletionSource<object>();
+
+                taskCompletionSources.Add(data, tcs);
+
+                return tcs.Task;
+            }
+
+            var task = EnumerableProcessor.ProcessEnumerable(GetData(), GetTask, 1);
+
+            Thread.Sleep(500);
+
+            taskCompletionSources.Count.Should().Be(1);
+
+            taskCompletionSources.Keys.Should().Contain(new[] { 1});
+
+            task.IsCanceled.Should().BeFalse();
+            task.IsCompleted.Should().BeFalse();
+            task.IsFaulted.Should().BeFalse();
+
+            taskCompletionSources[1].SetResult(null);
+
+            taskCompletionSources[2].SetResult(null);
+
+            Thread.Sleep(500);
+
+            taskCompletionSources[3].SetException(new MyCustomException("My exception"));
+
+            Thread.Sleep(500);
+
+            taskCompletionSources[4].SetResult(null);
+
+            taskCompletionSources[5].SetResult(null);
+
+            var result = await task;
+
+            result.CancelledTasks.Should().BeEmpty();
+            result.FaultedTasks.Length.Should().Be(1);
+
+            result.FaultedTasks[0].IsFaulted.Should().BeTrue();
+
+            result.FaultedTasks[0].Exception.InnerExceptions.Count.Should().Be(1);
+            result.FaultedTasks[0].Exception.InnerExceptions[0].Should().BeOfType<MyCustomException>()
+                .Which.Message.Should().Be("My exception");
+
+        }
+
+        [TestMethod]
+        public async Task Test_MaximumNumberOfNotCompletedTasksIs1_Task3IsCancelledLater_ResultContainsTheCancelledTask3()
+        {
+            IEnumerable<int> GetData()
+            {
+                yield return 1;
+                yield return 2;
+                yield return 3;
+                yield return 4;
+                yield return 5;
+            }
+
+            var taskCompletionSources = new Dictionary<int, TaskCompletionSource<object>>();
+
+
+            Task GetTask(int data)
+            {
+                var tcs = new TaskCompletionSource<object>();
+
+                taskCompletionSources.Add(data, tcs);
+
+                return tcs.Task;
+            }
+
+            var task = EnumerableProcessor.ProcessEnumerable(GetData(), GetTask, 1);
+
+            Thread.Sleep(500);
+
+            taskCompletionSources.Count.Should().Be(1);
+
+            taskCompletionSources.Keys.Should().Contain(new[] { 1 });
+
+            task.IsCanceled.Should().BeFalse();
+            task.IsCompleted.Should().BeFalse();
+            task.IsFaulted.Should().BeFalse();
+
+            taskCompletionSources[1].SetResult(null);
+
+            taskCompletionSources[2].SetResult(null);
+
+            Thread.Sleep(500);
+
+            taskCompletionSources[3].SetCanceled();
+
+            Thread.Sleep(500);
+
+            taskCompletionSources[4].SetResult(null);
+
+            taskCompletionSources[5].SetResult(null);
+
+            var result = await task;
+
+            result.FaultedTasks.Should().BeEmpty();
+            result.CancelledTasks.Length.Should().Be(1);
+
+            result.CancelledTasks[0].IsCanceled.Should().BeTrue();
+        }
+
 
         public class MyCustomException : Exception
         {
