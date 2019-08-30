@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>YMassad.ProceduralDataflow</id>
-    <version>0.9.3-alpha</version>
+    <version>0.9.4-alpha</version>
     <title>Procedural Dataflow</title>
     <authors>Yacoub Massad</authors>
     <owners>Yacoub Massad</owners>
@@ -10,7 +10,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>A library to create dataflows in a procedural way</description>
     <releaseNotes>Third prerelease</releaseNotes>
-    <copyright>Copyright 2018</copyright>
+    <copyright>Copyright 2019</copyright>
     <tags></tags>
   </metadata>
 </package>
