@@ -11,7 +11,7 @@ namespace ProceduralDataflow
     public partial class DfTask : INotifyCompletion
     {
         [ThreadStatic]
-        public static bool AllowCompleteWithoutAwait;
+        public static int AllowCompleteWithoutAwait;
 
         private Action continuationAction;
 
@@ -45,7 +45,7 @@ namespace ProceduralDataflow
 
         private void Complete()
         {
-            if (!DfTask.AllowCompleteWithoutAwait)
+            if (DfTask.AllowCompleteWithoutAwait == 0)
             {
                 manualResetEvent.Wait();
 

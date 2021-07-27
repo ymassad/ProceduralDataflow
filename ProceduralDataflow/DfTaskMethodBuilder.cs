@@ -17,7 +17,7 @@ namespace ProceduralDataflow
 
         public void Start<TStateMachine>(ref TStateMachine stateMachine) where TStateMachine : IAsyncStateMachine
         {
-            DfTask.AllowCompleteWithoutAwait = true;
+            DfTask.AllowCompleteWithoutAwait++;
 
             try
             {
@@ -25,7 +25,7 @@ namespace ProceduralDataflow
             }
             finally
             {
-                DfTask.AllowCompleteWithoutAwait = false;
+                DfTask.AllowCompleteWithoutAwait--;
             }
         }
 
@@ -79,7 +79,7 @@ namespace ProceduralDataflow
 
         public void Start<TStateMachine>(ref TStateMachine stateMachine) where TStateMachine : IAsyncStateMachine
         {
-            DfTask.AllowCompleteWithoutAwait = true;
+            DfTask.AllowCompleteWithoutAwait++;
 
             try
             {
@@ -87,7 +87,7 @@ namespace ProceduralDataflow
             }
             finally
             {
-                DfTask.AllowCompleteWithoutAwait = false;
+                DfTask.AllowCompleteWithoutAwait--;
             }
         }
 

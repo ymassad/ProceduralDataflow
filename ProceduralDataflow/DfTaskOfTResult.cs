@@ -45,7 +45,7 @@ namespace ProceduralDataflow
 
         private void Complete()
         {
-            if (!DfTask.AllowCompleteWithoutAwait)
+            if (DfTask.AllowCompleteWithoutAwait == 0)
             {
                 manualResetEvent.Wait();
 

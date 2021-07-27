@@ -932,6 +932,79 @@ namespace ProceduralDataflow.Tests
         }
 
 
+        [TestMethod]
+        public async Task DfTaskBasedMethodCanAwaitTasks()
+        {
+            async DfTask DoIt()
+            {
+                await Task.Delay(1000);
+            }
+
+            await DoIt();
+        }
+
+        [TestMethod]
+        public async Task DfTaskBasedMethodCanAwaitTasksAndReturnValue()
+        {
+            async DfTask<int> DoIt()
+            {
+                await Task.Delay(1000);
+
+                return 5;
+            }
+
+            Assert.AreEqual(5, await DoIt());
+        }
+
+        [TestMethod]
+        public async Task AsyncDfTaskBasedMethodCanSynchronouslyDoSomethingAndReturnValue()
+        {
+            async DfTask<int> DoIt()
+            {
+                return 5;
+            }
+
+            Assert.AreEqual(5, await DoIt());
+        }
+
+        [TestMethod]
+        public async Task AsyncDfTaskBasedMethodCanSynchronouslyDoSomethingAndReturnValueTwoLevels()
+        {
+            async DfTask<int> DoIt()
+            {
+                return 5;
+            }
+
+            async DfTask<int> DoIt2()
+            {
+                return await DoIt();
+            }
+
+            Assert.AreEqual(5, await DoIt2());
+        }
+
+        [TestMethod]
+        public async Task AsyncDfTaskBasedMethodCanSynchronouslyDoSomethingAndReturnValueThreeLevels()
+        {
+            async DfTask<int> DoIt()
+            {
+                return 5;
+            }
+
+            async DfTask<int> DoIt2()
+            {
+                return await DoIt();
+            }
+
+            async DfTask<int> DoIt3()
+            {
+                return await DoIt2();
+            }
+
+            Assert.AreEqual(5, await DoIt3());
+        }
+
+
         public static async Task CreateAndUseNewBlock(
             int numberOfThreads,
             int maximumNumberOfActionsInQueue,
