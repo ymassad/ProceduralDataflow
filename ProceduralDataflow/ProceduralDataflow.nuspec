@@ -2,15 +2,15 @@
 <package >
     <metadata>
         <id>YMassad.ProceduralDataflow</id>
-        <version>0.9.4-alpha</version>
+        <version>0.9.5-alpha</version>
         <title>Procedural Dataflow</title>
         <authors>Yacoub Massad</authors>
         <owners>Yacoub Massad</owners>
         <projectUrl>https://github.com/ymassad/ProceduralDataflow</projectUrl>
         <requireLicenseAcceptance>false</requireLicenseAcceptance>        
         <description>A library to create dataflows in a procedural way</description>
-        <releaseNotes>Fifth prerelease</releaseNotes>
-        <copyright>Copyright 2019</copyright>
+        <releaseNotes>Sixth prerelease</releaseNotes>
+        <copyright>Copyright 2021</copyright>
         <tags></tags>
         <license type="file">LICENSE.txt</license>
         <dependencies>
