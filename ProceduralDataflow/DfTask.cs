@@ -45,8 +45,10 @@ namespace ProceduralDataflow
 
         private void Complete()
         {
+            //I am doing this check to support the scenario where DfTask completes synchronously.
             if (DfTask.AllowCompleteWithoutAwait == 0)
             {
+                //I am doing this to make sure the continuation is run using the same thread that caused the DfTask to complete
                 manualResetEvent.Wait();
 
                 manualResetEvent.Dispose();
