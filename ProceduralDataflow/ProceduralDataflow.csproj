@@ -4,13 +4,17 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>7.3</LangVersion>
     <Version>0.9.5-alpha</Version>
-    <Copyright>Copyright © Yacoub Massad 2019</Copyright>
+    <Copyright>© 2021 Yacoub Massad</Copyright>
     <PackageId>YMassad.ProceduralDataflow</PackageId>
     <Product>Procedural Dataflow</Product>
     <Authors>Yacoub Massad</Authors>
     <Company />
     <Description>A library to create dataflows in a procedural way</Description>
     <PackageProjectUrl>https://github.com/ymassad/ProceduralDataflow</PackageProjectUrl>
+    <PackageReleaseNotes>Sixth prerelease</PackageReleaseNotes>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -22,6 +26,10 @@
     <None Update="DfTaskWhenAllDifferentTResults.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>DfTaskWhenAllDifferentTResults.cs</LastGenOutput>
+    </None>
+    <None Include="..\LICENSE.txt">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
     </None>
   </ItemGroup>
 
