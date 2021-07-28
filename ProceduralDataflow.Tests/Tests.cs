@@ -943,18 +943,7 @@ namespace ProceduralDataflow.Tests
             await DoIt();
         }
 
-        [TestMethod]
-        public async Task DfTaskBasedMethodCanAwaitTasksAndReturnValue()
-        {
-            async DfTask<int> DoIt()
-            {
-                await Task.Delay(1000);
-
-                return 5;
-            }
-
-            Assert.AreEqual(5, await DoIt());
-        }
+        //TODO: it is not supported to await a non-DfTask between two block runs. Create a Roslyn analyzer to detect this.
 
         [TestMethod]
         public async Task AsyncDfTaskBasedMethodCanSynchronouslyDoSomethingAndReturnValue()
