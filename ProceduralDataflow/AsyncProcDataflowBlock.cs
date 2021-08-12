@@ -12,20 +12,27 @@ namespace ProceduralDataflow
     {
         private readonly int? maximumDegreeOfParallelism;
         private readonly CancellationToken cancellationToken;
+        private readonly bool supportsPause;
 
         private readonly Channel<Func<Task>> collection;
 
         private readonly Channel<Func<Task>> collectionForReentrantItems;
 
         private readonly Guid nodeId;
-        
+
+        private readonly object pauseLockingObject = new object();
+
+        private TaskCompletionSource<int> pauseTcs;
+
         public AsyncProcDataflowBlock(
             int maximumNumberOfActionsInQueue,
             int? maximumDegreeOfParallelism,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            bool supportsPause = false)
         {
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
             this.cancellationToken = cancellationToken;
+            this.supportsPause = supportsPause;
 
             collection = Channel.CreateBounded<Func<Task>>(maximumNumberOfActionsInQueue);
 
@@ -164,6 +171,36 @@ namespace ProceduralDataflow
             DoIt();
         }
 
+        public void Pause()
+        {
+            if (!supportsPause)
+                throw new Exception("Pause is not supported based on constructor parameter");
+
+            lock (pauseLockingObject)
+            {
+                if (pauseTcs != null)
+                    throw new Exception("Already paused");
+
+                pauseTcs = new TaskCompletionSource<int>();
+            }
+        }
+
+        public void Resume()
+        {
+            if (!supportsPause)
+                throw new Exception("Pause is not supported based on constructor parameter");
+
+            lock (pauseLockingObject)
+            {
+                if (pauseTcs == null)
+                    throw new Exception("Not paused");
+
+                pauseTcs.SetResult(0);
+
+                pauseTcs = null;
+            }
+        }
+
         private async Task DoIt()
         {
             List<Task> tasks = new List<Task>();
@@ -174,6 +211,24 @@ namespace ProceduralDataflow
 
                 if (action == null)
                     return;
+
+                if (supportsPause)
+                {
+                    Task resumeTask = null;
+
+                    lock (pauseLockingObject)
+                    {
+                        if (pauseTcs != null)
+                        {
+                            resumeTask = pauseTcs.Task;
+                        }
+                    }
+
+                    if (resumeTask != null)
+                    {
+                        await resumeTask;
+                    }
+                }
 
                 var task = action();
 
@@ -204,12 +259,14 @@ namespace ProceduralDataflow
 
         public static AsyncProcDataflowBlock StartDefault(
             int maximumNumberOfActionsInQueue,
-            int? maximumDegreeOfParallelism)
+            int? maximumDegreeOfParallelism,
+            bool supportsPause = false)
         {
             var block =
                 new AsyncProcDataflowBlock(
                     maximumNumberOfActionsInQueue,
-                    maximumDegreeOfParallelism);
+                    maximumDegreeOfParallelism,
+                    supportsPause: supportsPause);
 
             block.Start();
 

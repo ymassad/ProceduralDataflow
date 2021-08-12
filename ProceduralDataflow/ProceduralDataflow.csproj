@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>7.3</LangVersion>
-    <Version>0.9.5-alpha</Version>
+    <Version>0.9.6-alpha</Version>
     <Copyright>© 2021 Yacoub Massad</Copyright>
     <PackageId>YMassad.ProceduralDataflow</PackageId>
     <Product>Procedural Dataflow</Product>
@@ -11,7 +11,7 @@
     <Company />
     <Description>A library to create dataflows in a procedural way</Description>
     <PackageProjectUrl>https://github.com/ymassad/ProceduralDataflow</PackageProjectUrl>
-    <PackageReleaseNotes>Sixth prerelease</PackageReleaseNotes>
+    <PackageReleaseNotes>Seventh prerelease</PackageReleaseNotes>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>

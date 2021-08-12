@@ -59,6 +59,61 @@ namespace ProceduralDataflow.Tests
         }
 
         [TestMethod]
+        public async Task TestPauseAndResume()
+        {
+            var node = new ProcDataflowBlock(new ThreadPoolBasedActionRunner(), 1, 1, default, true);
+
+            node.Start();
+
+            try
+            {
+                long numberOfTimesOperationWasRun = 0;
+
+                async Task Method1()
+                {
+                    await node.Run(() =>
+                    {
+                        var numberOfTimes = SimulateWork(
+                            TimeSpan.FromMilliseconds(100), ref numberOfTimesOperationWasRun);
+
+                    });
+                }
+
+                var tasks = Enumerable.Range(0, 30).Select(_ => Method1()).ToArray();
+
+                await Task.Delay(1000);
+
+                node.Pause();
+
+                await Task.Delay(1000);
+
+                var times = Interlocked.Read(ref numberOfTimesOperationWasRun);
+
+                await Task.Delay(1000);
+
+                var times2 = Interlocked.Read(ref numberOfTimesOperationWasRun);
+
+                times.Equals(times2).Should().BeTrue();
+
+                times.Should().BeLessThan(30);
+
+                node.Resume();
+
+                await Task.WhenAll(tasks);
+
+                Interlocked.Read(ref numberOfTimesOperationWasRun).Should().Be(30);
+            }
+            finally
+            {
+                node.Stop();
+            }
+
+            
+     
+        }
+
+
+        [TestMethod]
         public async Task FastProducerThatThrowsAnExceptionWillBeSlowedBySlowConsumerThatCatchesTheException()
         {
             await CreateAndUseNewBlock(1, 1, async runner1 =>
