@@ -207,7 +207,6 @@ namespace ProceduralDataflow.Tests
             });
         }
 
-
         [TestMethod]
         public async Task FastProducerWillBeSlowedBySlowConsumerWhenQueueSizeIs2()
         {
@@ -1048,6 +1047,48 @@ namespace ProceduralDataflow.Tests
             Assert.AreEqual(5, await DoIt3());
         }
 
+        [TestMethod]
+        public async Task FastProducerWillBeSlowedBySlowConsumerForAsyncVersionThatUsesACustomThreadsBasedActionRunner()
+        {
+            await CreateAndUseNewAsyncBlock(1, 1, async runner1 =>
+            {
+                await CreateAndUseNewAsyncBlock(1, 1, async runner2 =>
+                {
+                    long[] numberOfTimesFirstOperationWasRunWhenSecondOperationRuns = new long[10];
+
+                    long numberOfTimesFirstOperationWasRun = 0;
+
+                    long numberOfTimesSecondOperationWasRun = 0;
+
+                    async Task Method1()
+                    {
+                        await runner1.Run(async () =>
+                        {
+                            Interlocked.Increment(ref numberOfTimesFirstOperationWasRun);
+                        });
+
+                        await runner2.Run(async () =>
+                        {
+                            await Task.Delay(TimeSpan.FromMilliseconds(100));
+
+                            var numberOfTimes = Interlocked.Increment(ref numberOfTimesSecondOperationWasRun);
+
+                            numberOfTimesFirstOperationWasRunWhenSecondOperationRuns[numberOfTimes - 1] = Interlocked.Read(ref numberOfTimesFirstOperationWasRun);
+                        });
+                    }
+
+                    var tasks = Enumerable.Range(0, 10).Select(_ => Method1()).ToArray();
+
+                    await Task.WhenAll(tasks);
+
+                    PossibleValuesComparer
+                        .AreEqual(
+                            numberOfTimesFirstOperationWasRunWhenSecondOperationRuns,
+                            new PossibleValues<long>[] { 3, 4, 5, 6, 7, 8, 9, 10, 10, 10 })
+                        .Should().BeTrue();
+                }, useCustomThreadsBasedActionRunner: true);
+            }, useCustomThreadsBasedActionRunner: true);
+        }
 
         public static async Task CreateAndUseNewBlock(
             int numberOfThreads,
@@ -1075,12 +1116,32 @@ namespace ProceduralDataflow.Tests
             int? maximumDegreeOfParallelism,
             int maximumNumberOfActionsInQueue,
             Func<IAsyncProcDataflowBlock, Task> action,
-            CancellationToken cancellationToken = default)
+            CancellationToken cancellationToken = default,
+            bool useCustomThreadsBasedActionRunner = false)
         {
-            var node = new AsyncProcDataflowBlock(
-                maximumNumberOfActionsInQueue,
-                maximumDegreeOfParallelism,
-                cancellationToken);
+            AsyncProcDataflowBlock node;
+
+            CustomThreadsBasedActionRunner customThreadsBasedActionRunner = null;
+            
+            if (useCustomThreadsBasedActionRunner)
+            {
+                customThreadsBasedActionRunner = new CustomThreadsBasedActionRunner(8);
+
+                customThreadsBasedActionRunner.Start();
+
+                node = new AsyncProcDataflowBlock(
+                    customThreadsBasedActionRunner,
+                    maximumNumberOfActionsInQueue,
+                    maximumDegreeOfParallelism,
+                    cancellationToken);
+            }
+            else
+            {
+                node = new AsyncProcDataflowBlock(
+                    maximumNumberOfActionsInQueue,
+                    maximumDegreeOfParallelism,
+                    cancellationToken);
+            }
 
             node.Start();
 
@@ -1091,6 +1152,11 @@ namespace ProceduralDataflow.Tests
             finally
             {
                 node.Stop();
+
+                if (useCustomThreadsBasedActionRunner)
+                {
+                    customThreadsBasedActionRunner.Stop();
+                }
             }
         }
 

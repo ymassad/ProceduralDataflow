@@ -24,12 +24,25 @@ namespace ProceduralDataflow
 
         private TaskCompletionSource<int> pauseTcs;
 
+        private readonly IActionRunner actionRunner;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="actionRunner">This is used if async actions to be executed might contain CPU-intensive operations. Can be null.</param>
+        /// <param name="maximumNumberOfActionsInQueue"></param>
+        /// <param name="maximumDegreeOfParallelism"></param>
+        /// <param name="cancellationToken"></param>
+        /// <param name="supportsPause"></param>
         public AsyncProcDataflowBlock(
+            IActionRunner actionRunner,
             int maximumNumberOfActionsInQueue,
             int? maximumDegreeOfParallelism,
             CancellationToken cancellationToken = default,
             bool supportsPause = false)
         {
+            this.actionRunner = actionRunner;
+
             this.maximumDegreeOfParallelism = maximumDegreeOfParallelism;
             this.cancellationToken = cancellationToken;
             this.supportsPause = supportsPause;
@@ -39,6 +52,17 @@ namespace ProceduralDataflow
             collectionForReentrantItems = Channel.CreateUnbounded<Func<Task>>();
 
             nodeId = Guid.NewGuid();
+        }
+
+
+        public AsyncProcDataflowBlock(
+            int maximumNumberOfActionsInQueue,
+            int? maximumDegreeOfParallelism,
+            CancellationToken cancellationToken = default,
+            bool supportsPause = false)
+        : this(null, maximumNumberOfActionsInQueue, maximumDegreeOfParallelism, cancellationToken, supportsPause)
+        {
+
         }
 
         public DfTask Run(Func<Task> action)
@@ -230,7 +254,7 @@ namespace ProceduralDataflow
                     }
                 }
 
-                var task = action();
+                var task = actionRunner is null ? action() : actionRunner.EnqueueAction(action);
 
                 if (maximumDegreeOfParallelism.HasValue)
                 {
